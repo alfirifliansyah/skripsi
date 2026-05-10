@@ -1,0 +1,9 @@
+export const BLUE    = "#1B4FD8";
+export const BLUE_L  = "#EEF2FF";
+export const BLUE_M  = "#3B6EF6";
+export const YELLOW  = "#FACC15";
+export const YELLOW_L= "#FEFCE8";
+export const BG      = "#F8FAFF";
+export const WHITE   = "#FFFFFF";
+export const DARK    = "#0F1B3D";
+export const MUTED   = "#6B7A99";
