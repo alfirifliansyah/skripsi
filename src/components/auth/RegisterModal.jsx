@@ -106,7 +106,7 @@ export default function RegisterModal({ onClose, onSwitch, onSuccess }) {
         </button>
         <GoogleBtn label="Daftar dengan Google"/>
         <p style={{ textAlign:"center", fontSize:13, color:MUTED, marginTop:"1rem" }}>
-          Sudah punya akun?{" "}
+          Sudah punya akun kah?{" "}
           <button onClick={onSwitch} style={{ background:"none", border:"none", color:BLUE, fontWeight:700, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>Masuk di sini</button>
         </p>
       </div>
