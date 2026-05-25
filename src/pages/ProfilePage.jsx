@@ -39,7 +39,6 @@ export default function ProfilePage({
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  // Sync form ke user terbaru
   useEffect(() => {
     setForm({
       name:    user.name    || "",
@@ -50,7 +49,6 @@ export default function ProfilePage({
     });
   }, [user]);
 
-  // Auto-clear toast
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 3500);
@@ -118,20 +116,20 @@ export default function ProfilePage({
     <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:BG, color:DARK, minHeight:"100vh" }}>
       <Navbar activeNav="" onNav={handleNav} onLogin={onLogin} onRegister={onRegister} scrolled={scrolled} user={user} onGoProfile={()=>{}} onLogout={onLogout}/>
 
-      {/* Toast */}
       {toast && (
         <div style={{
           position:"fixed", top:84, right:24, zIndex:1200,
           background: toast.type==="success" ? "#059669" : "#DC2626",
           color: WHITE, padding:".85rem 1.5rem", borderRadius:10,
           fontSize:14, fontWeight:600, boxShadow:"0 12px 28px rgba(0,0,0,.18)",
-          animation:"slideUp .25s ease"
+          animation:"slideUp .25s ease",
+          maxWidth: "calc(100vw - 48px)",
         }}>
           {toast.type==="success" ? "✅ " : "⚠️ "}{toast.msg}
         </div>
       )}
 
-      <div style={{ maxWidth:1920, margin:"0 auto", padding:"7rem 3rem 5rem" }}>
+      <div className="section-pad" style={{ maxWidth:1920, margin:"0 auto", padding:"7rem 3rem 5rem" }}>
         <Anim>
           <button onClick={onBack} style={{ display:"inline-flex",alignItems:"center",gap:8,background:"none",border:"none",color:MUTED,fontSize:14,cursor:"pointer",fontFamily:"inherit",marginBottom:"2rem" }}>← Kembali ke Beranda</button>
         </Anim>
@@ -144,12 +142,12 @@ export default function ProfilePage({
                 {user.avatar || (user.name?.[0] || "U").toUpperCase()}
               </div>
             </div>
-            <div style={{ padding:"2.75rem 2rem 2rem" }}>
+            <div className="card-pad" style={{ padding:"2.75rem 2rem 2rem" }}>
               <div style={{ display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:"1rem" }}>
-                <div>
-                  <h2 style={{ fontWeight:800,fontSize:"1.6rem",color:DARK,marginBottom:".25rem" }}>{user.name}</h2>
+                <div style={{ minWidth: 0 }}>
+                  <h2 style={{ fontWeight:800,fontSize:"clamp(1.3rem,3vw,1.6rem)",color:DARK,marginBottom:".25rem" }}>{user.name}</h2>
                   <div style={{ display:"flex",alignItems:"center",gap:8,flexWrap:"wrap" }}>
-                    <span style={{ fontSize:13,color:MUTED }}>✉️ {user.email}</span>
+                    <span style={{ fontSize:13,color:MUTED, wordBreak:"break-all" }}>✉️ {user.email}</span>
                     {user.company && <span style={{ fontSize:12,background:BLUE_L,color:BLUE,fontWeight:700,padding:".2rem .75rem",borderRadius:100 }}>🏢 {user.company}</span>}
                     {user.is_admin && <span style={{ fontSize:12,background:"#FEF3C7",color:"#92400E",fontWeight:700,padding:".2rem .75rem",borderRadius:100 }}>⭐ ADMIN</span>}
                   </div>
@@ -161,7 +159,7 @@ export default function ProfilePage({
 
               {editing ? (
                 <div style={{ marginTop:"1.5rem" }}>
-                  <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1rem" }}>
+                  <div className="grid-2-sm" style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1rem" }}>
                     {[
                       ["name","Nama Lengkap","text",false],
                       ["email","Email","email",false],
@@ -182,7 +180,7 @@ export default function ProfilePage({
                       </div>
                     ))}
                   </div>
-                  <div style={{ display:"flex", gap:".75rem", marginTop:"1.25rem" }}>
+                  <div className="btn-group" style={{ display:"flex", gap:".75rem", marginTop:"1.25rem" }}>
                     <button
                       onClick={handleSaveProfile}
                       disabled={saving}
@@ -206,7 +204,7 @@ export default function ProfilePage({
                   ].map(([k, v]) => (
                     <div key={k} style={{ background:BG,borderRadius:12,padding:"1rem 1.25rem",border:"1px solid #E5EAF5" }}>
                       <div style={{ fontSize:11,color:MUTED,marginBottom:4,fontWeight:600,letterSpacing:".05em",textTransform:"uppercase" }}>{k}</div>
-                      <div style={{ fontSize:14,fontWeight:600,color:DARK }}>{v}</div>
+                      <div style={{ fontSize:14,fontWeight:600,color:DARK, wordBreak:"break-word" }}>{v}</div>
                     </div>
                   ))}
                 </div>
@@ -217,7 +215,7 @@ export default function ProfilePage({
 
         {/* Change Password */}
         <Anim>
-          <div style={{ background:WHITE,border:"1.5px solid #E5EAF5",borderRadius:18,padding:"1.5rem 2rem",marginBottom:"1.5rem" }}>
+          <div className="card-pad" style={{ background:WHITE,border:"1.5px solid #E5EAF5",borderRadius:18,padding:"1.5rem 2rem",marginBottom:"1.5rem" }}>
             <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"1rem" }}>
               <div>
                 <h3 style={{ fontWeight:700,fontSize:16,color:DARK,marginBottom:4 }}>🔐 Keamanan Akun</h3>
@@ -231,7 +229,7 @@ export default function ProfilePage({
             </div>
             {showPwd && (
               <div style={{ marginTop:"1.5rem",paddingTop:"1.5rem",borderTop:"1px solid #F1F5F9" }}>
-                <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"1rem" }}>
+                <div className="grid-3" style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"1rem" }}>
                   {[
                     ["currentPassword","Password Saat Ini"],
                     ["newPassword","Password Baru"],
@@ -253,7 +251,7 @@ export default function ProfilePage({
                 <button
                   onClick={handleChangePassword}
                   disabled={pwdSaving || !pwdForm.currentPassword || !pwdForm.newPassword}
-                  style={{ marginTop:"1.25rem",background:(pwdSaving||!pwdForm.currentPassword||!pwdForm.newPassword)?"#D1D9EF":BLUE,color:WHITE,border:"none",padding:".75rem 1.5rem",borderRadius:10,cursor:(pwdSaving||!pwdForm.currentPassword||!pwdForm.newPassword)?"not-allowed":"pointer",fontWeight:700,fontSize:14,fontFamily:"inherit" }}>
+                  style={{ marginTop:"1.25rem",background:(pwdSaving||!pwdForm.currentPassword||!pwdForm.newPassword)?"#D1D9EF":BLUE,color:WHITE,border:"none",padding:".75rem 1.5rem",borderRadius:10,cursor:(pwdSaving||!pwdForm.currentPassword||!pwdForm.newPassword)?"not-allowed":"pointer",fontWeight:700,fontSize:14,fontFamily:"inherit", width:"100%", maxWidth:280 }}>
                   {pwdSaving ? "Memproses..." : "Simpan Password Baru"}
                 </button>
               </div>
@@ -269,7 +267,7 @@ export default function ProfilePage({
           </div>
 
           {recentOrders.length === 0 ? (
-            <div style={{ background:WHITE,borderRadius:14,padding:"2.5rem",textAlign:"center",border:"1.5px solid #E5EAF5" }}>
+            <div className="card-pad" style={{ background:WHITE,borderRadius:14,padding:"2.5rem",textAlign:"center",border:"1.5px solid #E5EAF5" }}>
               <div style={{ fontSize:36, marginBottom:".75rem" }}>📭</div>
               <p style={{ fontSize:13,color:MUTED,marginBottom:"1rem" }}>Belum ada pesanan</p>
               <button onClick={onGoJasa} style={{ background:BLUE,color:WHITE,border:"none",padding:".6rem 1.4rem",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit" }}>Pesan Sekarang</button>
@@ -280,9 +278,9 @@ export default function ProfilePage({
                 const st  = STATUS_CONFIG[ord.status] || STATUS_CONFIG.menunggu;
                 const svc = jasaList.find(s => s.id === ord.svc) || jasaList.find(s => s.id_jasa === ord.svc);
                 return (
-                  <div key={ord.id_pemesanan || ord.id} style={{ background:WHITE,border:"1.5px solid #E5EAF5",borderRadius:14,padding:"1.1rem 1.4rem",display:"flex",alignItems:"center",gap:"1rem" }}>
+                  <div key={ord.id_pemesanan || ord.id} style={{ background:WHITE,border:"1.5px solid #E5EAF5",borderRadius:14,padding:"1.1rem 1.4rem",display:"flex",alignItems:"center",gap:"1rem",flexWrap:"wrap" }}>
                     <div style={{ width:48,height:48,borderRadius:10,background:svc?.imgBg||BLUE_L,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0 }}>{svc?.emoji || "📋"}</div>
-                    <div style={{ flex:1,minWidth:0 }}>
+                    <div style={{ flex:"1 1 200px",minWidth:0 }}>
                       <div style={{ fontWeight:700,fontSize:14,color:DARK,marginBottom:2 }}>{ord.svcName}</div>
                       <div style={{ fontSize:12,color:MUTED }}>{ord.paket} · {ord.date}</div>
                     </div>
@@ -299,7 +297,7 @@ export default function ProfilePage({
 
         {/* Logout */}
         <Anim>
-          <div style={{ background:WHITE,border:"1.5px solid #FEE2E2",borderRadius:14,padding:"1.25rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"1rem" }}>
+          <div className="card-pad" style={{ background:WHITE,border:"1.5px solid #FEE2E2",borderRadius:14,padding:"1.25rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"1rem" }}>
             <div>
               <h4 style={{ fontWeight:700,fontSize:14,color:"#DC2626",marginBottom:".25rem" }}>Keluar dari Akun</h4>
               <p style={{ fontSize:13,color:MUTED }}>Anda akan diarahkan kembali ke halaman beranda.</p>
@@ -309,7 +307,7 @@ export default function ProfilePage({
         </Anim>
       </div>
 
-      <div style={{ borderTop:"1px solid #E5EAF5", padding:"1.5rem 3rem", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+      <div className="footer-bottom section-pad" style={{ borderTop:"1px solid #E5EAF5", padding:"1.5rem 3rem", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <span style={{ fontSize:12,color:MUTED }}>© 2024 PT. IMA Creative Production</span>
         <button onClick={onBack} style={{ background:"none",border:"none",color:BLUE,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit" }}>← Kembali ke Beranda</button>
       </div>

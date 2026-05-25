@@ -51,12 +51,12 @@ export default function JasaPage({
 
       {/* Auth Required Prompt */}
       {showAuthPrompt && (
-        <div onClick={()=>setShowAuthPrompt(null)} style={{ position:"fixed",inset:0,zIndex:999,background:"rgba(15,27,61,.6)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",animation:"fadeIn .2s ease" }}>
-          <div onClick={e=>e.stopPropagation()} style={{ background:WHITE,borderRadius:20,padding:"2.5rem",maxWidth:420,width:"100%",boxShadow:"0 32px 80px rgba(15,27,61,.25)",animation:"slideUp .28s ease",textAlign:"center" }}>
+        <div onClick={()=>setShowAuthPrompt(null)} className="modal-pad" style={{ position:"fixed",inset:0,zIndex:999,background:"rgba(15,27,61,.6)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",animation:"fadeIn .2s ease" }}>
+          <div onClick={e=>e.stopPropagation()} className="modal-card" style={{ background:WHITE,borderRadius:20,padding:"2.5rem",maxWidth:420,width:"100%",boxShadow:"0 32px 80px rgba(15,27,61,.25)",animation:"slideUp .28s ease",textAlign:"center" }}>
             <div style={{ width:72,height:72,background:BLUE_L,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,margin:"0 auto 1.25rem" }}>🔐</div>
             <h3 style={{ fontWeight:800,fontSize:"1.3rem",color:DARK,marginBottom:".5rem" }}>Masuk untuk Memesan</h3>
             <p style={{ fontSize:14,color:MUTED,lineHeight:1.8,marginBottom:"1.75rem" }}>Anda perlu masuk atau daftar terlebih dahulu untuk memesan layanan <strong>{showAuthPrompt.title}</strong>.</p>
-            <div style={{ display:"flex",gap:".75rem" }}>
+            <div className="btn-group" style={{ display:"flex",gap:".75rem" }}>
               <button onClick={()=>{ setShowAuthPrompt(null); onLogin(); }} style={{ flex:1,padding:".8rem",background:WHITE,color:BLUE,border:`1.5px solid ${BLUE}`,borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit" }}>Masuk</button>
               <button onClick={()=>{ setShowAuthPrompt(null); onRegister(); }} style={{ flex:1,padding:".8rem",background:BLUE,color:WHITE,border:"none",borderRadius:10,fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit" }}>Daftar Gratis</button>
             </div>
@@ -67,14 +67,14 @@ export default function JasaPage({
 
       {/* Service Detail Modal */}
       {activeSvc && (
-        <div onClick={()=>setActiveId(null)} style={{ position:"fixed", inset:0, zIndex:999, background:"rgba(15,27,61,.6)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"1rem", animation:"fadeIn .2s ease" }}>
+        <div onClick={()=>setActiveId(null)} className="modal-pad" style={{ position:"fixed", inset:0, zIndex:999, background:"rgba(15,27,61,.6)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"1rem", animation:"fadeIn .2s ease" }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:WHITE, borderRadius:20, overflow:"hidden", width:"min(720px,96vw)", boxShadow:"0 32px 80px rgba(15,27,61,.25)", animation:"slideUp .28s ease", maxHeight:"90vh", overflowY:"auto" }}>
             <div style={{ height:180, background:activeSvc.imgBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:64, position:"relative" }}>
               {activeSvc.emoji}
               <span style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.35)", color:WHITE, fontSize:11, fontWeight:700, padding:".3rem .8rem", borderRadius:100 }}>{activeSvc.tag}</span>
               <button onClick={()=>setActiveId(null)} style={{ position:"absolute", top:14, left:14, background:"rgba(255,255,255,.2)", border:"none", color:WHITE, width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}>←</button>
             </div>
-            <div style={{ padding:"2rem" }}>
+            <div className="modal-card" style={{ padding:"2rem" }}>
               <h3 style={{ fontWeight:800, fontSize:"1.3rem", color:DARK, marginBottom:".25rem" }}>{activeSvc.title}</h3>
               <div style={{ fontSize:13, color:BLUE, fontWeight:700, marginBottom:"1rem" }}>Mulai dari {fmt(activeSvc.harga)}</div>
               <p style={{ color:MUTED, lineHeight:1.85, marginBottom:"1.5rem" }}>{activeSvc.desc}</p>
@@ -107,7 +107,7 @@ export default function JasaPage({
                 </>
               )}
 
-              <div style={{ display:"flex", gap:"0.75rem" }}>
+              <div className="btn-group" style={{ display:"flex", gap:"0.75rem" }}>
                 <button onClick={()=>{ setActiveId(null); handleBooking(activeSvc); }} style={{ flex:1, padding:".8rem", background:BLUE, color:WHITE, border:"none", borderRadius:10, fontWeight:700, fontSize:15, cursor:"pointer", fontFamily:"inherit" }}>Pesan Sekarang →</button>
                 <button onClick={()=>setActiveId(null)} style={{ padding:".8rem 1.25rem", background:WHITE, color:DARK, border:"1.5px solid #D1D9EF", borderRadius:10, fontWeight:500, fontSize:14, cursor:"pointer", fontFamily:"inherit" }}>Tutup</button>
               </div>
@@ -116,12 +116,12 @@ export default function JasaPage({
         </div>
       )}
 
-      <div style={{ maxWidth:1920, margin:"0 auto", padding:"7rem 3rem 5rem" }}>
+      <div className="section-pad" style={{ maxWidth:1920, margin:"0 auto", padding:"7rem 3rem 5rem" }}>
         <Anim>
           <button onClick={onBack} style={{ display:"inline-flex", alignItems:"center", gap:8, background:"none", border:"none", color:MUTED, fontSize:14, fontWeight:500, cursor:"pointer", fontFamily:"inherit", marginBottom:"2rem", padding:0, transition:"color .2s" }}
             onMouseOver={e=>e.currentTarget.style.color=BLUE} onMouseOut={e=>e.currentTarget.style.color=MUTED}>← Kembali ke Beranda</button>
           <Label>APA YANG KAMI TAWARKAN</Label>
-          <h1 style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800, color:DARK, letterSpacing:"-.02em", marginBottom:".75rem" }}>Jasa <span style={{ color:BLUE }}>Kami.</span></h1>
+          <h1 className="hero-title" style={{ fontSize:"clamp(1.8rem,4vw,3rem)", fontWeight:800, color:DARK, letterSpacing:"-.02em", marginBottom:".75rem" }}>Jasa <span style={{ color:BLUE }}>Kami.</span></h1>
           <p style={{ fontSize:16, color:MUTED, lineHeight:1.85, maxWidth:560, marginBottom:"2.5rem" }}>
             Kami menyediakan layanan multimedia profesional lengkap — dari live streaming, produksi video, hingga manajemen event skala besar untuk perusahaan di seluruh Indonesia.
           </p>
@@ -129,7 +129,7 @@ export default function JasaPage({
 
         {/* Search + Filter */}
         <Anim delay={0.05}>
-          <div style={{ display:"flex", alignItems:"center", gap:"1rem", marginBottom:"2.5rem", flexWrap:"wrap" }}>
+          <div className="filter-row" style={{ display:"flex", alignItems:"center", gap:"1rem", marginBottom:"2.5rem", flexWrap:"wrap" }}>
             <div style={{ position:"relative", flex:"1", minWidth:220 }}>
               <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", fontSize:15, color:MUTED, pointerEvents:"none" }}>🔍</span>
               <input type="text" placeholder="Cari layanan..." value={search} onChange={e=>setSearch(e.target.value)}
@@ -162,10 +162,10 @@ export default function JasaPage({
               </div>
             ) : filtered.map((svc, i) => (
               <Anim key={svc.id} delay={i * 0.06}>
-                <div onClick={()=>setActiveId(svc.id)} style={{ background:WHITE, border:"1.5px solid #E5EAF5", borderRadius:18, padding:"1.75rem", display:"flex", gap:"1.75rem", cursor:"pointer", alignItems:"flex-start", transition:"border-color .25s,transform .25s,box-shadow .25s" }}
+                <div onClick={()=>setActiveId(svc.id)} className="jasa-card" style={{ background:WHITE, border:"1.5px solid #E5EAF5", borderRadius:18, padding:"1.75rem", display:"flex", gap:"1.75rem", cursor:"pointer", alignItems:"flex-start", transition:"border-color .25s,transform .25s,box-shadow .25s" }}
                   onMouseOver={e=>{ e.currentTarget.style.borderColor=BLUE; e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 12px 32px rgba(27,79,216,.1)"; }}
                   onMouseOut={e=>{ e.currentTarget.style.borderColor="#E5EAF5"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
-                  <div style={{ width:200, minWidth:200, height:140, borderRadius:14, background:svc.imgBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:52, flexShrink:0, position:"relative", overflow:"hidden" }}>
+                  <div className="jasa-card-image" style={{ width:200, minWidth:200, height:140, borderRadius:14, background:svc.imgBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:52, flexShrink:0, position:"relative", overflow:"hidden" }}>
                     <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.18)" }}/>
                     <span style={{ position:"relative" }}>{svc.emoji}</span>
                     <div style={{ position:"absolute", top:10, left:10, width:28, height:28, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:WHITE }}>{String(i+1).padStart(2,"0")}</div>
@@ -185,7 +185,7 @@ export default function JasaPage({
                       {svc.features.length > 3 && <span style={{ background:BG, border:"1px solid #E5EAF5", color:MUTED, fontSize:11, fontWeight:500, padding:".2rem .65rem", borderRadius:100 }}>+{svc.features.length-3} lainnya</span>}
                     </div>
                   </div>
-                  <div style={{ flexShrink:0, width:40, height:40, borderRadius:"50%", background:BLUE_L, display:"flex", alignItems:"center", justifyContent:"center", color:BLUE, fontSize:18, alignSelf:"center" }}>→</div>
+                  <div className="jasa-card-arrow" style={{ flexShrink:0, width:40, height:40, borderRadius:"50%", background:BLUE_L, display:"flex", alignItems:"center", justifyContent:"center", color:BLUE, fontSize:18, alignSelf:"center" }}>→</div>
                 </div>
               </Anim>
             ))}
@@ -194,13 +194,13 @@ export default function JasaPage({
 
         {/* CTA strip */}
         <Anim delay={0.1}>
-          <div style={{ marginTop:"4rem", background:BLUE, borderRadius:20, padding:"3rem 2.5rem", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"2rem", flexWrap:"wrap", position:"relative", overflow:"hidden" }}>
+          <div className="cta-strip" style={{ marginTop:"4rem", background:BLUE, borderRadius:20, padding:"3rem 2.5rem", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"2rem", flexWrap:"wrap", position:"relative", overflow:"hidden" }}>
             <div style={{ position:"absolute", top:-30, right:-30, width:140, height:140, borderRadius:"50%", background:YELLOW, opacity:.15 }}/>
             <div style={{ position:"relative" }}>
-              <h3 style={{ fontWeight:700, fontSize:"1.4rem", color:WHITE, marginBottom:".5rem" }}>Tidak menemukan layanan yang Anda cari?</h3>
+              <h3 style={{ fontWeight:700, fontSize:"clamp(1.1rem,2.5vw,1.4rem)", color:WHITE, marginBottom:".5rem" }}>Tidak menemukan layanan yang Anda cari?</h3>
               <p style={{ fontSize:14, color:"rgba(255,255,255,.75)" }}>Hubungi kami dan kami akan menyesuaikan solusi khusus untuk kebutuhan Anda.</p>
             </div>
-            <div style={{ display:"flex", gap:".75rem", flexShrink:0, position:"relative" }}>
+            <div className="btn-group" style={{ display:"flex", gap:".75rem", flexShrink:0, position:"relative" }}>
               <button style={{ background:YELLOW, color:"#1C1200", border:"none", padding:".8rem 1.75rem", borderRadius:10, fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"inherit" }}>Hubungi Kami</button>
               <button onClick={onGoPortfolio} style={{ background:"rgba(255,255,255,.12)", color:WHITE, border:"1px solid rgba(255,255,255,.3)", padding:".8rem 1.75rem", borderRadius:10, fontWeight:500, fontSize:14, cursor:"pointer", fontFamily:"inherit" }}>Lihat Portofolio</button>
             </div>
@@ -208,7 +208,7 @@ export default function JasaPage({
         </Anim>
       </div>
 
-      <div style={{ borderTop:"1px solid #E5EAF5", padding:"1.5rem 3rem", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+      <div className="footer-bottom section-pad" style={{ borderTop:"1px solid #E5EAF5", padding:"1.5rem 3rem", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <span style={{ fontSize:12, color:MUTED }}>© 2024 PT. IMA Creative Production</span>
         <button onClick={onBack} style={{ background:"none", border:"none", color:BLUE, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>← Kembali ke Beranda</button>
       </div>

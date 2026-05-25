@@ -13,9 +13,8 @@ function BookingCalendar({ selDate, setSelDate, setSelTime, month, year, prevMon
   const isPast   = (d) => new Date(year,month,d) < new Date(today.getFullYear(),today.getMonth(),today.getDate());
   const isToday  = (d) => d===today.getDate() && month===today.getMonth() && year===today.getFullYear();
 
-  // Fetch tanggal yang TIDAK tersedia (blocked + already booked)
-  const [unavailable, setUnavailable] = useState([]); // array of YYYY-MM-DD
-  const [unavailableMap, setUnavailableMap] = useState({}); // { 'YYYY-MM-DD': { tipe, alasan } }
+  const [unavailable, setUnavailable] = useState([]);
+  const [unavailableMap, setUnavailableMap] = useState({});
   const [loadingJadwal, setLoadingJadwal] = useState(false);
 
   useEffect(() => {
@@ -111,7 +110,6 @@ function PaymentStep({
   const tax = Math.round((paketPrice + addonTotal) * 0.11);
   const handleNav = (link) => { if(link==="Beranda") onGoHome(); };
 
-  // Format tanggal ke YYYY-MM-DD
   const dateForBackend = `${year}-${String(month+1).padStart(2,"0")}-${String(selDate).padStart(2,"0")}`;
 
   const handleBayar = async () => {
@@ -125,7 +123,6 @@ function PaymentStep({
 
     let order;
     try {
-      // 1. Create order di backend (server hitung total)
       order = await pemesananAPI.create({
         serviceId,
         paketId:    paketData?.id,
@@ -146,7 +143,6 @@ function PaymentStep({
       return;
     }
 
-    // 2. Trigger Midtrans Snap (kalau pilih midtrans), atau langsung success
     if (payMethod === "midtrans") {
       try {
         const idPemesanan = order?.id_pemesanan || order?.id;
@@ -175,18 +171,14 @@ function PaymentStep({
             setLoading(false);
           },
           onClose: () => {
-            // User tutup popup tanpa selesaikan — pesanan tetap dibuat dengan status menunggu bayar
             onSuccess({ ...order, payment_status: "menunggu" });
           },
         });
-        // Loading tetap on sampai callback Snap dipanggil
       } catch (e) {
         setError(e.message || "Gagal memulai pembayaran Midtrans.");
         setLoading(false);
-        // Jangan auto-redirect — tampilkan error agar bisa debug
       }
     } else {
-      // Transfer manual / metode lain — langsung sukses
       setLoading(false);
       onSuccess(order);
     }
@@ -195,9 +187,9 @@ function PaymentStep({
   return (
     <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:BG, minHeight:"100vh" }}>
       <Navbar activeNav="Pemesanan" onNav={handleNav} onLogin={onLogin} onRegister={onRegister} scrolled={scrolled} user={user} onGoProfile={onGoProfile} onLogout={onLogout}/>
-      <div style={{ maxWidth:760, margin:"0 auto", padding:"7rem 2rem 4rem" }}>
+      <div className="section-pad" style={{ maxWidth:760, margin:"0 auto", padding:"7rem 2rem 4rem" }}>
         <button onClick={onBack} style={{ display:"inline-flex",alignItems:"center",gap:8,background:"none",border:"none",color:MUTED,fontSize:14,cursor:"pointer",fontFamily:"inherit",marginBottom:"2rem" }}>← Kembali Edit Pesanan</button>
-        <h2 style={{ fontWeight:800,fontSize:"1.8rem",color:DARK,marginBottom:".5rem" }}>Review & Pembayaran</h2>
+        <h2 style={{ fontWeight:800,fontSize:"clamp(1.4rem,3vw,1.8rem)",color:DARK,marginBottom:".5rem" }}>Review & Pembayaran</h2>
         <p style={{ color:MUTED,marginBottom:"2rem" }}>Periksa detail pesanan Anda sebelum melanjutkan pembayaran.</p>
 
         {error && (
@@ -206,7 +198,7 @@ function PaymentStep({
           </div>
         )}
 
-        <div style={{ background:WHITE,borderRadius:16,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.25rem" }}>
+        <div className="card-pad" style={{ background:WHITE,borderRadius:16,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.25rem" }}>
           <h3 style={{ fontWeight:700,fontSize:15,color:DARK,marginBottom:"1.25rem" }}>📋 Ringkasan Pesanan</h3>
           {[
             ["Layanan",   svcName],
@@ -218,14 +210,14 @@ function PaymentStep({
             ["Perusahaan",company||"-"],
             ["Catatan",   notes||"-"],
           ].map(([k,v])=>(
-            <div key={k} style={{ display:"flex",justifyContent:"space-between",padding:".6rem 0",borderBottom:"1px solid #F1F5F9" }}>
-              <span style={{ fontSize:14,color:MUTED }}>{k}</span>
-              <span style={{ fontSize:14,fontWeight:600,color:DARK,maxWidth:"60%",textAlign:"right" }}>{v}</span>
+            <div key={k} style={{ display:"flex",justifyContent:"space-between",padding:".6rem 0",borderBottom:"1px solid #F1F5F9", gap:8 }}>
+              <span style={{ fontSize:14,color:MUTED, flexShrink:0 }}>{k}</span>
+              <span style={{ fontSize:14,fontWeight:600,color:DARK,maxWidth:"60%",textAlign:"right", wordBreak:"break-word" }}>{v}</span>
             </div>
           ))}
         </div>
 
-        <div style={{ background:WHITE,borderRadius:16,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.25rem" }}>
+        <div className="card-pad" style={{ background:WHITE,borderRadius:16,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.25rem" }}>
           <h3 style={{ fontWeight:700,fontSize:15,color:DARK,marginBottom:"1.25rem" }}>💰 Rincian Biaya</h3>
           {[[paketLabel, fmt(paketPrice)],["Tambahan", fmt(addonTotal)],["PPN 11%", fmt(tax)]].map(([k,v])=>(
             <div key={k} style={{ display:"flex",justifyContent:"space-between",padding:".55rem 0",borderBottom:"1px solid #F1F5F9" }}>
@@ -239,16 +231,16 @@ function PaymentStep({
           </div>
         </div>
 
-        <div style={{ background:WHITE,borderRadius:16,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.75rem" }}>
+        <div className="card-pad" style={{ background:WHITE,borderRadius:16,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.75rem" }}>
           <h3 style={{ fontWeight:700,fontSize:15,color:DARK,marginBottom:"1.25rem" }}>💳 Metode Pembayaran</h3>
-          <div style={{ display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:".75rem",marginBottom:"1.25rem" }}>
+          <div className="grid-2-sm" style={{ display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:".75rem",marginBottom:"1.25rem" }}>
             {[
               {id:"midtrans",label:"Midtrans (Online)",icon:"⚡", desc:"Bayar instan via QRIS, e-wallet, kartu, transfer"},
               {id:"transfer",label:"Transfer Manual",  icon:"🏦", desc:"Transfer ke rekening, konfirmasi via WhatsApp"},
             ].map(m=>(
               <button key={m.id} onClick={()=>setPayMethod(m.id)} style={{ background:payMethod===m.id?BLUE_L:WHITE,border:`2px solid ${payMethod===m.id?BLUE:"#E5EAF5"}`,borderRadius:12,padding:"1rem 1.25rem",cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:12,transition:"all .2s",textAlign:"left" }}>
                 <span style={{ fontSize:24,flexShrink:0 }}>{m.icon}</span>
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize:13,fontWeight:700,color:payMethod===m.id?BLUE:DARK,marginBottom:2 }}>{m.label}</div>
                   <div style={{ fontSize:11,color:MUTED }}>{m.desc}</div>
                 </div>
@@ -305,7 +297,6 @@ export default function BookingPage({
   onBack, onSuccess, onLogin, onRegister, onGoHome,
   user, onGoProfile, onLogout,
 }) {
-  // Always re-resolve service from latest jasaList (in case admin updated it while we're here)
   const liveService = jasaList.find(j => j.id === service.id) || service;
 
   const packages = Array.isArray(liveService.packages) ? liveService.packages : [];
@@ -332,7 +323,6 @@ export default function BookingPage({
     return ()=>window.removeEventListener("scroll",fn);
   },[]);
 
-  // Auto-select default paket kalau berubah dari API
   useEffect(() => {
     if (!paket && packages.length > 0) setPaket(packages[0].id);
   }, [packages, paket]);
@@ -349,12 +339,11 @@ export default function BookingPage({
   const total      = subtotal + tax;
   const canProceed = selDate && selTime && name && phone && paketData;
 
-  // Service tidak tersedia lagi
   if (liveService.status_tersedia === "tidak_tersedia") {
     return (
       <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:BG, color:DARK, minHeight:"100vh" }}>
         <Navbar activeNav="Jasa" onNav={handleNav} onLogin={onLogin} onRegister={onRegister} scrolled={scrolled} user={user} onGoProfile={onGoProfile} onLogout={onLogout}/>
-        <div style={{ maxWidth:520, margin:"7rem auto", padding:"3rem 2rem", background:WHITE, borderRadius:18, textAlign:"center", border:"1.5px solid #E5EAF5" }}>
+        <div className="modal-card" style={{ maxWidth:520, margin:"7rem auto", padding:"3rem 2rem", background:WHITE, borderRadius:18, textAlign:"center", border:"1.5px solid #E5EAF5" }}>
           <div style={{ fontSize:48, marginBottom:"1rem" }}>⚠️</div>
           <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:DARK, marginBottom:".5rem" }}>Layanan tidak tersedia</h2>
           <p style={{ color:MUTED, marginBottom:"1.5rem", fontSize:14 }}>Layanan <strong>{liveService.title}</strong> sedang tidak tersedia untuk pemesanan.</p>
@@ -368,7 +357,7 @@ export default function BookingPage({
     return (
       <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:BG, color:DARK, minHeight:"100vh" }}>
         <Navbar activeNav="Jasa" onNav={handleNav} onLogin={onLogin} onRegister={onRegister} scrolled={scrolled} user={user} onGoProfile={onGoProfile} onLogout={onLogout}/>
-        <div style={{ maxWidth:520, margin:"7rem auto", padding:"3rem 2rem", background:WHITE, borderRadius:18, textAlign:"center", border:"1.5px solid #E5EAF5" }}>
+        <div className="modal-card" style={{ maxWidth:520, margin:"7rem auto", padding:"3rem 2rem", background:WHITE, borderRadius:18, textAlign:"center", border:"1.5px solid #E5EAF5" }}>
           <div style={{ fontSize:48, marginBottom:"1rem" }}>📦</div>
           <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:DARK, marginBottom:".5rem" }}>Paket belum tersedia</h2>
           <p style={{ color:MUTED, marginBottom:"1.5rem", fontSize:14 }}>Layanan ini belum memiliki paket. Silakan hubungi admin untuk informasi lebih lanjut.</p>
@@ -401,18 +390,18 @@ export default function BookingPage({
   return (
     <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:BG, color:DARK, minHeight:"100vh" }}>
       <Navbar activeNav="Pemesanan" onNav={handleNav} onLogin={onLogin} onRegister={onRegister} scrolled={scrolled} user={user} onGoProfile={onGoProfile} onLogout={onLogout}/>
-      <div style={{ maxWidth:1920, margin:"0 auto", padding:"7rem 2rem 5rem" }}>
+      <div className="section-pad" style={{ maxWidth:1920, margin:"0 auto", padding:"7rem 2rem 5rem" }}>
 
         <Anim>
           <button onClick={onBack} style={{ display:"inline-flex",alignItems:"center",gap:8,background:"none",border:"none",color:MUTED,fontSize:14,cursor:"pointer",fontFamily:"inherit",marginBottom:"2rem" }}>← Kembali ke Daftar Jasa</button>
         </Anim>
 
         <Anim delay={0.03}>
-          <div style={{ display:"flex",alignItems:"center",gap:0,marginBottom:"2.5rem" }}>
+          <div style={{ display:"flex",alignItems:"center",gap:0,marginBottom:"2.5rem",overflowX:"auto" }}>
             {[["1","Detail Pesanan"],["2","Review & Bayar"],["3","Selesai"]].map(([n,label],i)=>(
               <div key={n} style={{ display:"flex",alignItems:"center",flex:i<2?1:"none" }}>
                 <div style={{ display:"flex",alignItems:"center",gap:8 }}>
-                  <div style={{ width:32,height:32,borderRadius:"50%",background:i===0?BLUE:BLUE_L,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:i===0?WHITE:MUTED }}>{n}</div>
+                  <div style={{ width:32,height:32,borderRadius:"50%",background:i===0?BLUE:BLUE_L,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:i===0?WHITE:MUTED,flexShrink:0 }}>{n}</div>
                   <span style={{ fontSize:13,fontWeight:i===0?700:400,color:i===0?DARK:MUTED,whiteSpace:"nowrap" }}>{label}</span>
                 </div>
                 {i<2&&<div style={{ flex:1,height:2,background:"#E5EAF5",margin:"0 12px",minWidth:20 }}/>}
@@ -421,7 +410,7 @@ export default function BookingPage({
           </div>
         </Anim>
 
-        <div style={{ display:"grid",gridTemplateColumns:"1fr 380px",gap:"2rem",alignItems:"start" }}>
+        <div className="grid-booking" style={{ display:"grid",gridTemplateColumns:"1fr 380px",gap:"2rem",alignItems:"start" }}>
           <div>
             <Anim>
               <div style={{ borderRadius:20,overflow:"hidden",marginBottom:"1.75rem",position:"relative",aspectRatio:"16/9",background:liveService.imgBg,display:"flex",alignItems:"center",justifyContent:"center" }}>
@@ -433,7 +422,7 @@ export default function BookingPage({
                 <div style={{ position:"absolute",top:16,left:16,background:"rgba(255,255,255,.2)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.3)",color:WHITE,fontSize:11,fontWeight:700,padding:".3rem .8rem",borderRadius:100 }}>{liveService.tag}</div>
                 <div style={{ position:"absolute",bottom:16,right:16,background:"rgba(255,255,255,.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.3)",color:WHITE,fontSize:12,fontWeight:600,padding:".4rem .9rem",borderRadius:100 }}>⭐ 4.9 · 200+ Event</div>
               </div>
-              <h1 style={{ fontWeight:800,fontSize:"1.7rem",color:DARK,marginBottom:".5rem" }}>{liveService.title?.toUpperCase()}</h1>
+              <h1 className="hero-title" style={{ fontWeight:800,fontSize:"clamp(1.3rem,3vw,1.7rem)",color:DARK,marginBottom:".5rem" }}>{liveService.title?.toUpperCase()}</h1>
               <p style={{ fontSize:14,color:MUTED,lineHeight:1.8,marginBottom:"1.5rem" }}>{liveService.desc}</p>
               <div style={{ display:"flex",gap:8,flexWrap:"wrap",marginBottom:"2rem" }}>
                 {(liveService.features||[]).map(f=><span key={f} style={{ background:BLUE_L,color:BLUE,fontSize:12,fontWeight:600,padding:".3rem .8rem",borderRadius:100 }}>✦ {f}</span>)}
@@ -441,18 +430,18 @@ export default function BookingPage({
             </Anim>
 
             <Anim delay={0.06}>
-              <div style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.5rem" }}>
+              <div className="card-pad" style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.5rem" }}>
                 <h3 style={{ fontWeight:700,fontSize:16,color:DARK,marginBottom:"1.25rem",display:"flex",alignItems:"center",gap:8 }}>
                   <span style={{ width:28,height:28,background:BLUE_L,borderRadius:8,display:"inline-flex",alignItems:"center",justifyContent:"center" }}>📦</span> Pilih Paket
                 </h3>
                 <div style={{ display:"flex",flexDirection:"column",gap:".75rem" }}>
                   {packages.map(p=>(
-                    <div key={p.id} onClick={()=>setPaket(p.id)} style={{ border:`2px solid ${paket===p.id?BLUE:"#E5EAF5"}`,background:paket===p.id?BLUE_L:WHITE,borderRadius:14,padding:"1.1rem 1.25rem",cursor:"pointer",transition:"all .2s",display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-                      <div style={{ display:"flex",alignItems:"center",gap:"0.75rem" }}>
+                    <div key={p.id} onClick={()=>setPaket(p.id)} style={{ border:`2px solid ${paket===p.id?BLUE:"#E5EAF5"}`,background:paket===p.id?BLUE_L:WHITE,borderRadius:14,padding:"1.1rem 1.25rem",cursor:"pointer",transition:"all .2s",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8 }}>
+                      <div style={{ display:"flex",alignItems:"center",gap:"0.75rem", minWidth:0, flex:1 }}>
                         <div style={{ width:18,height:18,borderRadius:"50%",border:`2px solid ${paket===p.id?BLUE:MUTED}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
                           {paket===p.id&&<div style={{ width:9,height:9,borderRadius:"50%",background:BLUE }}/>}
                         </div>
-                        <div>
+                        <div style={{ minWidth:0 }}>
                           <div style={{ fontWeight:700,fontSize:14,color:DARK }}>{p.label} {p.hours && <span style={{ color:MUTED,fontWeight:400,fontSize:12 }}>· {p.hours}</span>}</div>
                           {Array.isArray(p.features) && (
                             <div style={{ display:"flex",gap:6,flexWrap:"wrap",marginTop:4 }}>
@@ -461,7 +450,7 @@ export default function BookingPage({
                           )}
                         </div>
                       </div>
-                      <div style={{ fontWeight:800,fontSize:14,color:paket===p.id?BLUE:DARK,whiteSpace:"nowrap" }}>{fmt(p.price)}</div>
+                      <div style={{ fontWeight:800,fontSize:14,color:paket===p.id?BLUE:DARK,whiteSpace:"nowrap",flexShrink:0 }}>{fmt(p.price)}</div>
                     </div>
                   ))}
                 </div>
@@ -470,22 +459,22 @@ export default function BookingPage({
 
             {addonList.length > 0 && (
               <Anim delay={0.08}>
-                <div style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.5rem" }}>
+                <div className="card-pad" style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.75rem",marginBottom:"1.5rem" }}>
                   <h3 style={{ fontWeight:700,fontSize:16,color:DARK,marginBottom:"1.25rem",display:"flex",alignItems:"center",gap:8 }}>
                     <span style={{ width:28,height:28,background:BLUE_L,borderRadius:8,display:"inline-flex",alignItems:"center",justifyContent:"center" }}>➕</span>
                     {liveService.addonLabel || "Tambahan"} <span style={{ fontSize:12,color:MUTED,fontWeight:400 }}>(Opsional)</span>
                   </h3>
                   <div style={{ display:"flex",flexDirection:"column",gap:".75rem" }}>
                     {addonList.map(a=>(
-                      <div key={a.id} style={{ display:"flex",alignItems:"center",justifyContent:"space-between",border:`1.5px solid ${(addons[a.id]||0)>0?BLUE:"#E5EAF5"}`,borderRadius:12,padding:"1rem 1.25rem",background:(addons[a.id]||0)>0?BLUE_L:WHITE,transition:"all .2s" }}>
-                        <div style={{ display:"flex",alignItems:"center",gap:".9rem" }}>
+                      <div key={a.id} style={{ display:"flex",alignItems:"center",justifyContent:"space-between",border:`1.5px solid ${(addons[a.id]||0)>0?BLUE:"#E5EAF5"}`,borderRadius:12,padding:"1rem 1.25rem",background:(addons[a.id]||0)>0?BLUE_L:WHITE,transition:"all .2s",gap:8,flexWrap:"wrap" }}>
+                        <div style={{ display:"flex",alignItems:"center",gap:".9rem", minWidth:0, flex:"1 1 auto" }}>
                           <span style={{ fontSize:22 }}>{a.icon || "✨"}</span>
-                          <div>
+                          <div style={{ minWidth:0 }}>
                             <div style={{ fontWeight:700,fontSize:14,color:DARK }}>{a.name}</div>
                             <div style={{ fontSize:12,color:MUTED }}>{a.desc} · <span style={{ color:BLUE,fontWeight:600 }}>{fmt(a.price)}/unit</span></div>
                           </div>
                         </div>
-                        <div style={{ display:"flex",alignItems:"center",gap:10 }}>
+                        <div style={{ display:"flex",alignItems:"center",gap:10, flexShrink:0 }}>
                           <button onClick={()=>setAddons(c=>({...c,[a.id]:Math.max(0,(c[a.id]||0)-1)}))} style={{ width:30,height:30,borderRadius:"50%",border:`1.5px solid ${(addons[a.id]||0)>0?BLUE:"#D1D9EF"}`,background:WHITE,color:(addons[a.id]||0)>0?BLUE:MUTED,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>−</button>
                           <span style={{ fontWeight:700,fontSize:15,color:DARK,minWidth:20,textAlign:"center" }}>{addons[a.id]||0}</span>
                           <button onClick={()=>setAddons(c=>({...c,[a.id]:(c[a.id]||0)+1}))} style={{ width:30,height:30,borderRadius:"50%",border:`1.5px solid ${BLUE}`,background:BLUE,color:WHITE,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>+</button>
@@ -498,11 +487,11 @@ export default function BookingPage({
             )}
 
             <Anim delay={0.1}>
-              <div style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.75rem" }}>
+              <div className="card-pad" style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.75rem" }}>
                 <h3 style={{ fontWeight:700,fontSize:16,color:DARK,marginBottom:"1.25rem",display:"flex",alignItems:"center",gap:8 }}>
                   <span style={{ width:28,height:28,background:BLUE_L,borderRadius:8,display:"inline-flex",alignItems:"center",justifyContent:"center" }}>👤</span> Detail Pemesanan
                 </h3>
-                <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:".9rem" }}>
+                <div className="grid-2-sm" style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:".9rem" }}>
                   {[
                     ["Nama PIC *","text",name,setName,"Nama penanggung jawab","span1"],
                     ["No. Telepon *","tel",phone,setPhone,"+62 812 xxxx xxxx","span1"],
@@ -526,10 +515,10 @@ export default function BookingPage({
             </Anim>
           </div>
 
-          {/* RIGHT — sticky sidebar */}
+          {/* RIGHT — sidebar (di mobile dia akan jadi bagian bawah karena grid-booking jadi 1 kolom) */}
           <div style={{ position:"sticky",top:90 }}>
             <Anim delay={0.04}>
-              <div style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.5rem",marginBottom:"1.25rem" }}>
+              <div className="card-pad" style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.5rem",marginBottom:"1.25rem" }}>
                 <h3 style={{ fontWeight:700,fontSize:15,color:DARK,marginBottom:"1.25rem",letterSpacing:".04em" }}>📅 PILIH TANGGAL</h3>
                 <BookingCalendar selDate={selDate} setSelDate={setSelDate} setSelTime={setSelTime} month={month} year={year} prevMonth={prevMonth} nextMonth={nextMonth} serviceId={liveService.id}/>
               </div>
@@ -537,7 +526,7 @@ export default function BookingPage({
 
             {selDate && (
               <Anim>
-                <div style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.5rem",marginBottom:"1.25rem" }}>
+                <div className="card-pad" style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.5rem",marginBottom:"1.25rem" }}>
                   <h3 style={{ fontWeight:700,fontSize:15,color:DARK,marginBottom:"1rem",letterSpacing:".04em" }}>⏰ PILIH WAKTU MULAI</h3>
                   <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:".5rem" }}>
                     {TIME_SLOTS.map(t=>(
@@ -549,7 +538,7 @@ export default function BookingPage({
             )}
 
             <Anim delay={0.06}>
-              <div style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.5rem" }}>
+              <div className="card-pad" style={{ background:WHITE,borderRadius:18,border:"1.5px solid #E5EAF5",padding:"1.5rem" }}>
                 <h3 style={{ fontWeight:700,fontSize:15,color:DARK,marginBottom:"1rem" }}>🧾 Total Biaya</h3>
                 <div style={{ display:"flex",flexDirection:"column",gap:".55rem",marginBottom:"1rem" }}>
                   <div style={{ display:"flex",justifyContent:"space-between" }}>

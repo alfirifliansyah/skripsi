@@ -25,8 +25,283 @@ body {
 #root {
   width: 100%;
   min-height: 100vh;
-  /* Hapus max-width dan margin auto yang membatasi lebar */
   max-width: none;
   margin: 0;
   padding: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   RESPONSIVE HELPERS
+   Dipakai dengan className di JSX. Aman dipasang bareng inline
+   style — class CSS akan override property yang sama via !important.
+
+   Breakpoint:
+     mobile:  < 640px
+     tablet:  640px – 1023px
+     desktop: >= 1024px (style default JSX tidak diubah)
+   ────────────────────────────────────────────────────────────── */
+
+/* ── Padding section utama (default JSX: "7rem 3rem") ── */
+@media (max-width: 1023px) {
+  .section-pad {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    padding-top: 4rem !important;
+    padding-bottom: 4rem !important;
+  }
+}
+@media (max-width: 640px) {
+  .section-pad {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+}
+
+/* ── Hero section ── */
+@media (max-width: 1023px) {
+  .section-hero {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+    gap: 2rem !important;
+  }
+}
+@media (max-width: 640px) {
+  .section-hero {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* ── Grid: 2 kolom → 1 kolom di tablet/mobile ── */
+@media (max-width: 1023px) {
+  .grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+/* ── Grid: 3 kolom → 2 tablet, 1 mobile ── */
+@media (max-width: 1023px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+}
+@media (max-width: 640px) {
+  .grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Grid: 4 kolom → 2 tablet, 1 mobile ── */
+@media (max-width: 1023px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+}
+@media (max-width: 640px) {
+  .grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Footer grid: 2fr 1fr 1fr 1fr → 2 kolom tablet, 1 mobile ── */
+@media (max-width: 1023px) {
+  .grid-footer {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2rem !important;
+  }
+}
+@media (max-width: 640px) {
+  .grid-footer {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* ── Grid 2 kolom kecil — stack hanya di HP ── */
+@media (max-width: 640px) {
+  .grid-2-sm {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* ── Booking page: layout 1fr 380px ── */
+@media (max-width: 1023px) {
+  .grid-booking {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* ── Heading hero ── */
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: clamp(1.75rem, 7vw, 2.4rem) !important;
+    line-height: 1.2 !important;
+  }
+  .hero-subtitle {
+    font-size: 15px !important;
+  }
+}
+
+/* ── Stat boxes di hero ── */
+@media (max-width: 640px) {
+  .stat-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+}
+
+/* ── Tombol grup → full-width di mobile ── */
+@media (max-width: 640px) {
+  .btn-group {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .btn-group > button,
+  .btn-group > a {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* ── Card jasa: image+content side-by-side → stack di mobile ── */
+@media (max-width: 640px) {
+  .jasa-card {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    padding: 1.25rem !important;
+  }
+  .jasa-card-image {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 160px !important;
+  }
+  .jasa-card-arrow {
+    display: none !important;
+  }
+}
+
+/* ── Helpers tampil/sembunyi ── */
+@media (max-width: 1023px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+.show-mobile {
+  display: none !important;
+}
+@media (max-width: 1023px) {
+  .show-mobile {
+    display: flex !important;
+  }
+}
+
+/* ── Card padding adjust ── */
+@media (max-width: 640px) {
+  .card-pad {
+    padding: 1.25rem !important;
+  }
+}
+
+/* ── Modal ── */
+@media (max-width: 640px) {
+  .modal-pad {
+    padding: 1rem !important;
+  }
+  .modal-card {
+    padding: 1.5rem !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* ── Lingkaran dekoratif hero ── */
+@media (max-width: 1023px) {
+  .deco-circle-lg {
+    width: 280px !important;
+    height: 280px !important;
+  }
+  .deco-circle-sm {
+    width: 140px !important;
+    height: 140px !important;
+  }
+}
+@media (max-width: 640px) {
+  .deco-circle-lg {
+    width: 180px !important;
+    height: 180px !important;
+  }
+  .deco-circle-sm {
+    width: 100px !important;
+    height: 100px !important;
+  }
+}
+
+/* ── About: gambar dekorasi tidak overflow ── */
+@media (max-width: 640px) {
+  .about-image {
+    max-width: 240px !important;
+    padding: 2rem !important;
+  }
+  .about-image-inner {
+    width: 110px !important;
+    height: 110px !important;
+    font-size: 44px !important;
+  }
+}
+
+/* ── CTA box ── */
+@media (max-width: 640px) {
+  .cta-box {
+    padding: 2.5rem 1.25rem !important;
+    border-radius: 16px !important;
+  }
+  .cta-strip {
+    padding: 2rem 1.25rem !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    text-align: center !important;
+  }
+}
+
+/* ── Filter chip bar ── */
+@media (max-width: 640px) {
+  .filter-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+}
+
+/* ── Card portfolio: tinggi adaptif ── */
+@media (max-width: 640px) {
+  .porto-card {
+    height: 200px !important;
+  }
+}
+
+/* ── Footer bottom strip ── */
+@media (max-width: 640px) {
+  .footer-bottom {
+    flex-direction: column !important;
+    gap: .5rem !important;
+    text-align: center !important;
+  }
+}
+
+/* ── Navbar mobile menu animation ── */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

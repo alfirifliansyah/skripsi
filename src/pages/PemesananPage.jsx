@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { BLUE, BLUE_L, BG, WHITE, DARK, MUTED, YELLOW_L } from "../constants/colors";
 import { STATUS_CONFIG, fmt } from "../constants/data";
 import { pemesananAPI } from "../services/api";
@@ -6,19 +6,13 @@ import Navbar from "../components/layout/Navbar";
 import Anim from "../components/ui/Anim";
 import Label from "../components/ui/Label";
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  FIX #5 — Load Midtrans Snap.js with safe poll on onload to avoid race where
-//            window.snap isn't assigned yet when the onload callback fires.
-// ─────────────────────────────────────────────────────────────────────────────
 function loadMidtransSnap() {
   return new Promise((resolve, reject) => {
-    // Already loaded and ready
     if (window.snap) { resolve(window.snap); return; }
 
     const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
     const snapUrl   = import.meta.env.VITE_MIDTRANS_SNAP_URL;
 
-    // FIX #2 — guard against missing env vars with a clear error
     if (!clientKey || !snapUrl) {
       reject(new Error(
         "Midtrans env vars tidak ditemukan. " +
@@ -27,7 +21,6 @@ function loadMidtransSnap() {
       return;
     }
 
-    // Script tag already injected but snap not ready — poll until it is
     const existing = document.querySelector(`script[src="${snapUrl}"]`);
     if (existing) {
       const poll = setInterval(() => {
@@ -36,12 +29,10 @@ function loadMidtransSnap() {
       return;
     }
 
-    // Inject Snap.js for the first time
     const script = document.createElement("script");
     script.src = snapUrl;
     script.setAttribute("data-client-key", clientKey);
 
-    // FIX #5 — poll after onload so window.snap is definitely assigned
     script.onload = () => {
       if (window.snap) { resolve(window.snap); return; }
       const poll = setInterval(() => {
@@ -54,18 +45,12 @@ function loadMidtransSnap() {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  FIX #4 — Payment statuses that should still show the Pay button (allow retry)
-// ─────────────────────────────────────────────────────────────────────────────
 const RETRYABLE_PAYMENT_STATUSES = new Set(["pending", "failed", "expired", "deny", "cancel", null, undefined]);
 
 const needsPayment = (ord) =>
   ord.status === "menunggu" &&
   RETRYABLE_PAYMENT_STATUSES.has(ord.pembayaran?.status_verifikasi);
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 export default function PemesananPage({
   orders = [], ordersLoading = false, onRefresh,
   jasaList = [],
@@ -74,22 +59,16 @@ export default function PemesananPage({
 }) {
   const [scrolled,       setScrolled]       = useState(false);
   const [filterStatus,   setFilterStatus]   = useState("semua");
-  const [activeOrder,    setActiveOrder]     = useState(null);
+  const [activeOrder,    setActiveOrder]    = useState(null);
   const [refreshing,     setRefreshing]     = useState(false);
   const [cancelling,     setCancelling]     = useState(false);
-
-  // FIX #6 — renamed from `paying` to `fetchingToken` (more accurate: only true
-  //           while the backend token request is in-flight, NOT while popup is open)
   const [fetchingToken,  setFetchingToken]  = useState(false);
-
   const [toast,          setToast]          = useState(null);
 
-  // Pre-load Snap.js as early as possible so it's ready when user clicks Pay
   useEffect(() => {
     if (user) loadMidtransSnap().catch(() => {});
   }, [user]);
 
-  // Scroll listener + initial refresh
   useEffect(() => {
     window.scrollTo(0, 0);
     if (onRefresh) onRefresh();
@@ -99,7 +78,6 @@ export default function PemesananPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // FIX #3 — Auto-poll every 12 s (UI claims this; now actually implemented)
   useEffect(() => {
     if (!user || !onRefresh) return;
     const interval = setInterval(() => {
@@ -109,21 +87,18 @@ export default function PemesananPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Auto-dismiss toast after 3.5 s
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 3500);
     return () => clearTimeout(t);
   }, [toast]);
 
-  // ── Nav helper ────────────────────────────────────────────────────────────
   const handleNav = (link) => {
     if (link === "Beranda")    { onBack();        return; }
     if (link === "Portofolio") { onGoPortfolio(); return; }
     if (link === "Jasa")       { onGoJasa();      return; }
   };
 
-  // ── Manual refresh ────────────────────────────────────────────────────────
   const handleManualRefresh = async () => {
     if (!onRefresh) return;
     setRefreshing(true);
@@ -137,7 +112,6 @@ export default function PemesananPage({
     }
   };
 
-  // ── Cancel ────────────────────────────────────────────────────────────────
   const handleCancel = async (ord) => {
     const orderId = ord.id_pemesanan;
     if (!orderId) { setToast({ type: "error", msg: "ID pesanan tidak ditemukan" }); return; }
@@ -156,28 +130,18 @@ export default function PemesananPage({
     }
   };
 
-  // ── Midtrans Pay ──────────────────────────────────────────────────────────
   const handlePay = async (ord) => {
     const orderId = ord.id_pemesanan;
     if (!orderId) { setToast({ type: "error", msg: "ID pesanan tidak ditemukan" }); return; }
 
-    // FIX #6 — only true during the backend token fetch
     setFetchingToken(true);
     try {
-      // FIX #1 — pemesananAPI.getSnapToken must return response.data.data
-      //           so snap_token is directly accessible here.
-      //           See services/api.js example below.
       const { snap_token } = await pemesananAPI.getSnapToken(orderId);
-
       if (!snap_token) throw new Error("Snap token tidak diterima dari server.");
 
-      // FIX #5 — safe load with post-onload poll
       const snap = await loadMidtransSnap();
-
-      // Done fetching — release the button before popup opens
       setFetchingToken(false);
 
-      // Open Snap popup (synchronous, callback-based — returns immediately)
       snap.pay(snap_token, {
         onSuccess(result) {
           setToast({ type: "success", msg: "Pembayaran berhasil! 🎉" });
@@ -195,7 +159,6 @@ export default function PemesananPage({
           console.error("Midtrans error:", result);
         },
         onClose() {
-          // User closed popup — refresh so status badge updates
           if (onRefresh) onRefresh();
         },
       });
@@ -203,22 +166,17 @@ export default function PemesananPage({
       setToast({ type: "error", msg: e.message || "Gagal memulai pembayaran" });
       setFetchingToken(false);
     }
-    // NOTE: no `finally` here — setFetchingToken(false) is called manually above
-    // so it fires before snap.pay() opens the popup, not after the popup closes.
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  //  NOT LOGGED IN
-  // ─────────────────────────────────────────────────────────────────────────
   if (!user) {
     return (
       <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:BG, color:DARK, minHeight:"100vh" }}>
         <Navbar activeNav="Pemesanan" onNav={handleNav} onLogin={onLogin} onRegister={onRegister} scrolled={scrolled} user={user} onGoProfile={onGoProfile} onLogout={onLogout}/>
-        <div style={{ maxWidth:520, margin:"7rem auto", padding:"3rem 2rem", background:WHITE, borderRadius:20, textAlign:"center", border:"1.5px solid #E5EAF5" }}>
+        <div className="modal-card" style={{ maxWidth:520, margin:"7rem auto", padding:"3rem 2rem", background:WHITE, borderRadius:20, textAlign:"center", border:"1.5px solid #E5EAF5" }}>
           <div style={{ width:72, height:72, background:BLUE_L, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, margin:"0 auto 1.25rem" }}>🔐</div>
           <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:DARK, marginBottom:".5rem" }}>Masuk untuk melihat pesanan</h2>
           <p style={{ color:MUTED, marginBottom:"1.5rem", fontSize:14 }}>Silakan masuk atau daftar untuk melihat riwayat pemesanan Anda.</p>
-          <div style={{ display:"flex", gap:".75rem", justifyContent:"center" }}>
+          <div className="btn-group" style={{ display:"flex", gap:".75rem", justifyContent:"center" }}>
             <button onClick={onLogin}    style={{ background:WHITE, color:BLUE, border:`1.5px solid ${BLUE}`, padding:".75rem 1.75rem", borderRadius:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Masuk</button>
             <button onClick={onRegister} style={{ background:BLUE,  color:WHITE, border:"none",                padding:".75rem 1.75rem", borderRadius:10, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Daftar</button>
           </div>
@@ -227,9 +185,6 @@ export default function PemesananPage({
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  //  MAIN RENDER
-  // ─────────────────────────────────────────────────────────────────────────
   const filters = ["semua", "menunggu", "proses", "selesai", "batal"];
   const shown   = filterStatus === "semua" ? orders : orders.filter(o => o.status === filterStatus);
 
@@ -237,7 +192,6 @@ export default function PemesananPage({
     <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:BG, color:DARK, minHeight:"100vh" }}>
       <Navbar activeNav="Pemesanan" onNav={handleNav} onLogin={onLogin} onRegister={onRegister} scrolled={scrolled} user={user} onGoProfile={onGoProfile} onLogout={onLogout}/>
 
-      {/* ── Toast ── */}
       {toast && (
         <div style={{
           position:"fixed", top:84, right:24, zIndex:1200,
@@ -245,12 +199,12 @@ export default function PemesananPage({
           color: WHITE, padding:".85rem 1.5rem", borderRadius:10,
           fontSize:14, fontWeight:600, boxShadow:"0 12px 28px rgba(0,0,0,.18)",
           animation:"slideUp .25s ease",
+          maxWidth: "calc(100vw - 48px)",
         }}>
           {toast.type === "success" ? "✅ " : "⚠️ "}{toast.msg}
         </div>
       )}
 
-      {/* ── Order Detail Modal ── */}
       {activeOrder && (() => {
         const ord = activeOrder;
         const st  = STATUS_CONFIG[ord.status] || STATUS_CONFIG.menunggu;
@@ -259,13 +213,13 @@ export default function PemesananPage({
         return (
           <div
             onClick={() => setActiveOrder(null)}
+            className="modal-pad"
             style={{ position:"fixed", inset:0, zIndex:999, background:"rgba(15,27,61,.6)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"1rem", animation:"fadeIn .2s ease" }}
           >
             <div
               onClick={e => e.stopPropagation()}
               style={{ background:WHITE, borderRadius:20, overflow:"hidden", width:"min(580px,96vw)", boxShadow:"0 32px 80px rgba(15,27,61,.25)", animation:"slideUp .28s ease", maxHeight:"90vh", overflowY:"auto" }}
             >
-              {/* Modal header */}
               <div style={{ height:140, background:svc?.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:56, position:"relative" }}>
                 {svc?.emoji || "📋"}
                 <button
@@ -277,10 +231,9 @@ export default function PemesananPage({
                 </span>
               </div>
 
-              {/* Modal body */}
-              <div style={{ padding:"1.75rem" }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"1.25rem" }}>
-                  <div>
+              <div className="modal-card" style={{ padding:"1.75rem" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"1.25rem", flexWrap:"wrap", gap:8 }}>
+                  <div style={{ minWidth: 0 }}>
                     <h3 style={{ fontWeight:800, fontSize:"1.15rem", color:DARK }}>{ord.svcName}</h3>
                     <p style={{ fontSize:13, color:MUTED, marginTop:2 }}>{ord.company}</p>
                   </div>
@@ -289,7 +242,6 @@ export default function PemesananPage({
                   </span>
                 </div>
 
-                {/* Detail rows */}
                 {[
                   ["Paket",        ord.paket],
                   ["Tanggal",      ord.date],
@@ -297,17 +249,18 @@ export default function PemesananPage({
                   ["PIC",          ord.nama_pic   || "-"],
                   ["Telepon",      ord.telepon_pic || "-"],
                   ["Total Bayar",  fmt(ord.total)],
-                  // FIX #4 — show "Perlu Dibayar" label for retryable statuses
                   ["Status Bayar", ord.pembayaran?.status_verifikasi || "pending"],
                 ].map(([k, v]) => (
-                  <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:".6rem 0", borderBottom:"1px solid #F1F5F9" }}>
-                    <span style={{ fontSize:14, color:MUTED }}>{k}</span>
+                  <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:".6rem 0", borderBottom:"1px solid #F1F5F9", gap:8 }}>
+                    <span style={{ fontSize:14, color:MUTED, flexShrink:0 }}>{k}</span>
                     <span style={{
                       fontSize:14,
                       fontWeight: k === "Total Bayar" ? 800 : 600,
                       color: k === "Total Bayar" ? BLUE
                            : k === "Status Bayar" && RETRYABLE_PAYMENT_STATUSES.has(v) && v !== null ? "#B45309"
                            : DARK,
+                      textAlign: "right",
+                      wordBreak: "break-word",
                     }}>
                       {v}
                     </span>
@@ -321,14 +274,12 @@ export default function PemesananPage({
                   </div>
                 )}
 
-                {/* ── Action buttons ── */}
-                <div style={{ marginTop:"1.5rem", display:"flex", gap:".75rem", flexWrap:"wrap" }}>
+                <div className="btn-group" style={{ marginTop:"1.5rem", display:"flex", gap:".75rem", flexWrap:"wrap" }}>
 
-                  {/* FIX #4 — Pay button now visible for expired/denied/cancelled payments too */}
                   {needsPayment(ord) && (
                     <button
                       onClick={() => handlePay(ord)}
-                      disabled={fetchingToken}  // FIX #6 — correct state name
+                      disabled={fetchingToken}
                       style={{
                         flex:1, minWidth:140, padding:".75rem",
                         background: fetchingToken ? "#93C5FD" : BLUE,
@@ -378,13 +329,12 @@ export default function PemesananPage({
         );
       })()}
 
-      {/* ── Page body ── */}
-      <div style={{ maxWidth:1760, margin:"0 auto", padding:"7rem 2rem 5rem" }}>
+      <div className="section-pad" style={{ maxWidth:1760, margin:"0 auto", padding:"7rem 2rem 5rem" }}>
         <Anim>
           <button onClick={onBack} style={{ display:"inline-flex", alignItems:"center", gap:8, background:"none", border:"none", color:MUTED, fontSize:14, cursor:"pointer", fontFamily:"inherit", marginBottom:"2rem" }}>← Kembali ke Beranda</button>
           <Label>RIWAYAT PESANAN</Label>
           <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:"1rem", flexWrap:"wrap", marginBottom:".75rem" }}>
-            <h1 style={{ fontSize:"clamp(1.8rem,3.5vw,2.6rem)", fontWeight:800, color:DARK, letterSpacing:"-.02em" }}>
+            <h1 className="hero-title" style={{ fontSize:"clamp(1.6rem,3.5vw,2.6rem)", fontWeight:800, color:DARK, letterSpacing:"-.02em" }}>
               Pemesanan <span style={{ color:BLUE }}>Saya</span>
             </h1>
             <button
@@ -403,9 +353,8 @@ export default function PemesananPage({
           </p>
         </Anim>
 
-        {/* ── Stats cards ── */}
         <Anim delay={0.04}>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"1rem", marginBottom:"2.5rem" }}>
+          <div className="grid-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"1rem", marginBottom:"2.5rem" }}>
             {[
               { label:"Total Pesanan", val:orders.length,                                  bg:BLUE_L,    text:BLUE       },
               { label:"Menunggu",      val:orders.filter(o => o.status==="menunggu").length, bg:YELLOW_L, text:"#92400E" },
@@ -420,7 +369,6 @@ export default function PemesananPage({
           </div>
         </Anim>
 
-        {/* ── Filter + New order ── */}
         <Anim delay={0.06}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"1rem", marginBottom:"2rem" }}>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
@@ -443,7 +391,6 @@ export default function PemesananPage({
           </div>
         </Anim>
 
-        {/* ── Order list ── */}
         {ordersLoading && orders.length === 0 ? (
           <div style={{ textAlign:"center", padding:"4rem", color:MUTED }}>
             <div style={{ fontSize:36, marginBottom:"1rem", animation:"spin 1s linear infinite", display:"inline-block" }}>⏳</div>
@@ -451,7 +398,7 @@ export default function PemesananPage({
           </div>
         ) : shown.length === 0 ? (
           <Anim>
-            <div style={{ textAlign:"center", padding:"5rem", color:MUTED, background:WHITE, borderRadius:20, border:"1.5px solid #E5EAF5" }}>
+            <div className="card-pad" style={{ textAlign:"center", padding:"5rem", color:MUTED, background:WHITE, borderRadius:20, border:"1.5px solid #E5EAF5" }}>
               <div style={{ fontSize:56, marginBottom:"1rem" }}>📭</div>
               <h3 style={{ fontWeight:700, fontSize:18, color:DARK, marginBottom:".5rem" }}>
                 {orders.length === 0 ? "Belum ada pesanan" : "Tidak ada pesanan dengan filter ini"}
@@ -476,11 +423,12 @@ export default function PemesananPage({
                 <Anim key={ord.id_pemesanan || ord.id || i} delay={i * 0.04}>
                   <div
                     onClick={() => setActiveOrder(ord)}
+                    className="jasa-card"
                     style={{ background:WHITE, border:"1.5px solid #E5EAF5", borderRadius:16, padding:"1.5rem", display:"flex", alignItems:"center", gap:"1.5rem", cursor:"pointer", transition:"border-color .25s,transform .25s,box-shadow .25s" }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = BLUE; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(27,79,216,.1)"; }}
                     onMouseOut={e =>  { e.currentTarget.style.borderColor = "#E5EAF5"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
                   >
-                    <div style={{ width:72, height:72, borderRadius:14, background:svc?.imgBg || BLUE_L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, flexShrink:0 }}>
+                    <div className="jasa-card-image" style={{ width:72, height:72, borderRadius:14, background:svc?.imgBg || BLUE_L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, flexShrink:0 }}>
                       {svc?.emoji || "📋"}
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
@@ -489,7 +437,6 @@ export default function PemesananPage({
                         <span style={{ fontSize:11, fontFamily:"monospace", color:MUTED, background:BG, padding:".15rem .5rem", borderRadius:6, border:"1px solid #E5EAF5" }}>
                           {ord.kode || ord.id}
                         </span>
-                        {/* FIX #4 — show "Belum Dibayar" badge in list for retryable statuses */}
                         {needsPayment(ord) && (
                           <span style={{ fontSize:10, fontWeight:700, background:"#FEF3C7", color:"#92400E", padding:".15rem .5rem", borderRadius:6, border:"1px solid #FCD34D" }}>
                             💳 Belum Dibayar
@@ -507,7 +454,7 @@ export default function PemesananPage({
                         {st.icon} {st.label}
                       </span>
                     </div>
-                    <div style={{ color:MUTED, fontSize:18, flexShrink:0 }}>›</div>
+                    <div className="jasa-card-arrow" style={{ color:MUTED, fontSize:18, flexShrink:0 }}>›</div>
                   </div>
                 </Anim>
               );
@@ -515,15 +462,14 @@ export default function PemesananPage({
           </div>
         )}
 
-        {/* ── CTA banner ── */}
         <Anim delay={0.1}>
-          <div style={{ marginTop:"3rem", background:BLUE, borderRadius:20, padding:"2.5rem 2rem", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"2rem", flexWrap:"wrap", position:"relative", overflow:"hidden" }}>
+          <div className="cta-strip" style={{ marginTop:"3rem", background:BLUE, borderRadius:20, padding:"2.5rem 2rem", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"2rem", flexWrap:"wrap", position:"relative", overflow:"hidden" }}>
             <div style={{ position:"absolute", top:-20, right:-20, width:120, height:120, borderRadius:"50%", background:"#FACC15", opacity:.15 }}/>
             <div style={{ position:"relative" }}>
-              <h3 style={{ fontWeight:700, fontSize:"1.3rem", color:WHITE, marginBottom:".4rem" }}>Butuh layanan baru?</h3>
+              <h3 style={{ fontWeight:700, fontSize:"clamp(1.1rem,2.5vw,1.3rem)", color:WHITE, marginBottom:".4rem" }}>Butuh layanan baru?</h3>
               <p style={{ fontSize:14, color:"rgba(255,255,255,.75)" }}>Pesan jasa multimedia profesional IMA Creative Production sekarang.</p>
             </div>
-            <div style={{ display:"flex", gap:".75rem", flexShrink:0, position:"relative" }}>
+            <div className="btn-group" style={{ display:"flex", gap:".75rem", flexShrink:0, position:"relative" }}>
               <button onClick={onGoJasa}      style={{ background:"#FACC15", color:"#1C1200", border:"none",                          padding:".8rem 1.75rem", borderRadius:10, fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"inherit" }}>Lihat Semua Jasa</button>
               <button onClick={onGoPortfolio} style={{ background:"rgba(255,255,255,.12)", color:WHITE, border:"1px solid rgba(255,255,255,.3)", padding:".8rem 1.75rem", borderRadius:10, fontWeight:500, fontSize:14, cursor:"pointer", fontFamily:"inherit" }}>Lihat Portofolio</button>
             </div>
@@ -531,8 +477,7 @@ export default function PemesananPage({
         </Anim>
       </div>
 
-      {/* ── Footer ── */}
-      <div style={{ borderTop:"1px solid #E5EAF5", padding:"1.5rem 3rem", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+      <div className="footer-bottom section-pad" style={{ borderTop:"1px solid #E5EAF5", padding:"1.5rem 3rem", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <span style={{ fontSize:12, color:MUTED }}>© 2024 PT. IMA Creative Production</span>
         <button onClick={onBack} style={{ background:"none", border:"none", color:BLUE, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>← Kembali ke Beranda</button>
       </div>
