@@ -170,12 +170,18 @@ export default function JasaPage({
                   onMouseOver={e=>{ e.currentTarget.style.borderColor=BLUE; e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 12px 32px rgba(27,79,216,.1)"; }}
                   onMouseOut={e=>{ e.currentTarget.style.borderColor="#E5EAF5"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
                   <div className="jasa-card-image" style={{ width:200, minWidth:200, height:140, borderRadius:14, background:svc.imgBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:52, flexShrink:0, position:"relative", overflow:"hidden" }}>
-                    {svc.gambar_url && (
-                      <img src={svc.gambar_url} alt={svc.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+                    {svc.gambar_url ? (
+                      <>
+                        <img src={svc.gambar_url} alt={svc.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", zIndex:0 }}/>
+                        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.18)", zIndex:1 }}/>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.18)", zIndex:1 }}/>
+                        <span style={{ position:"relative", zIndex:1 }}>{svc.emoji}</span>
+                      </>
                     )}
-                    <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.18)" }}/>
-                    {!svc.gambar_url && <span style={{ position:"relative" }}>{svc.emoji}</span>}
-                    <div style={{ position:"absolute", top:10, left:10, width:28, height:28, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:WHITE, zIndex:1 }}>{String(i+1).padStart(2,"0")}</div>
+                    <div style={{ position:"absolute", top:10, left:10, width:28, height:28, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:WHITE, zIndex:2 }}>{String(i+1).padStart(2,"0")}</div>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:".6rem", flexWrap:"wrap" }}>
