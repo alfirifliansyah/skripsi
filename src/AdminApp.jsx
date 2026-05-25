@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { authAPI, adminAPI, pemesananAPI, jasaAPI, jadwalAPI, portofolioAPI, pengaturanAPI, getToken } from "./services/api";
+import ImageUploader from "./components/admin/ImageUploader";
 
 /* ─── Design tokens ─── */
 const SIDEBAR_BG  = "#0D1117";
@@ -629,6 +630,8 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
     tag:              initial.tag || "Layanan",
     tag_color:        initial.tag_color || initial.tagColor || "#1B4FD8",
     img_bg:           initial.img_bg || initial.imgBg || BG_PRESETS[0],
+    gambar:           initial.gambar     || null,
+    gambar_url:       initial.gambar_url || null,
     features:         Array.isArray(initial.features) ? [...initial.features] : [],
     packages:         Array.isArray(initial.packages) ? initial.packages.map(p => ({
                         id: p.id, label: p.label, hours: p.hours || "", price: Number(p.price || 0),
@@ -759,6 +762,19 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
             </select>
           </Field>
         </div>
+        <Field label="GAMBAR JASA (OPSIONAL — JIKA DIISI, AKAN MENGGANTI GRADIENT)" full>
+          <ImageUploader
+            value={form.gambar}
+            valueUrl={form.gambar_url}
+            folder="jasa"
+            onChange={(path, url) => setForm(f => ({ ...f, gambar: path, gambar_url: url }))}
+            onError={(msg) => showToast({ type:"error", msg })}
+            height={180}
+          />
+          <p style={{ fontSize:11, color:MUTED, marginTop:6 }}>
+            Rekomendasi rasio 16:9 atau 4:3 untuk hasil terbaik. Maksimal 5MB.
+          </p>
+        </Field>
         <Field label="BACKGROUND GRADIENT (PILIH PRESET / CUSTOM)" full>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:6, marginBottom:8 }}>
             {BG_PRESETS.map((bg,i)=>(
@@ -1492,6 +1508,8 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
     tanggal_proyek: initial.tanggal_proyek || "",
     icon: initial.icon || "🎬",
     img_bg: initial.img_bg || initial.imgBg || BG_PRESETS[0],
+    gambar:     initial.gambar     || null,
+    gambar_url: initial.gambar_url || null,
     tag: initial.tag || "PROJECT",
     tag_color: initial.tag_color || initial.tagColor || "#1B4FD8",
     is_featured: !!initial.is_featured,
@@ -1570,6 +1588,19 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
             </select>
           </Field>
         </div>
+        <Field label="GAMBAR PORTOFOLIO (OPSIONAL — JIKA DIISI, AKAN MENGGANTI GRADIENT)" full>
+          <ImageUploader
+            value={form.gambar}
+            valueUrl={form.gambar_url}
+            folder="portofolio"
+            onChange={(path, url) => setForm({ ...form, gambar: path, gambar_url: url })}
+            onError={(msg) => showToast({ type:"error", msg })}
+            height={180}
+          />
+          <p style={{ fontSize:11, color:MUTED, marginTop:6 }}>
+            Rekomendasi rasio 16:9 atau 4:3. Maksimal 5MB.
+          </p>
+        </Field>
         <Field label="BACKGROUND GRADIENT" full>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:6, marginBottom:8 }}>
             {BG_PRESETS.map((bg,i)=>(
@@ -1665,6 +1696,23 @@ function BerandaSettingsPage({ showToast }) {
           {saving ? "Menyimpan..." : "💾 Simpan Semua"}
         </button>
       </div>
+
+      <Card style={{ marginBottom:"1rem" }}>
+        <SectionTitle>🖼️ Gambar Hero (Banner Atas Beranda)</SectionTitle>
+        <p style={{ fontSize:12, color:MUTED, marginBottom:"1rem", marginTop:"-.5rem" }}>
+          Gambar besar yang tampil di bagian paling atas halaman beranda. Kosongkan jika ingin pakai default.
+        </p>
+        <ImageUploader
+          value={settings.hero_image || null}
+          valueUrl={settings.hero_image_url || null}
+          folder="hero"
+          onChange={(path, url) => {
+            setSettings(s => ({ ...s, hero_image: path || "", hero_image_url: url || "" }));
+          }}
+          onError={(msg) => showToast({ type:"error", msg })}
+          height={220}
+        />
+      </Card>
 
       {sections.map(section => (
         <Card key={section.title} style={{ marginBottom:"1rem" }}>
