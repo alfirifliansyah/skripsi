@@ -579,7 +579,10 @@ function ServicesPage({ showToast }) {
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))", gap:"1rem" }}>
         {services.map(svc => (
           <Card key={svc.id_jasa || svc.id} style={{ padding:0, overflow:"hidden" }}>
-            <div style={{ height:120, background:svc.img_bg || svc.imgBg || BG_PRESETS[0], display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
+            <div style={{ height:120, background:svc.img_bg || svc.imgBg || BG_PRESETS[0], display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
+              {svc.gambar_url && (
+                <img src={svc.gambar_url} alt={svc.nama_jasa || svc.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+                    )}
               {svc.emoji || svc.icon || "🎬"}
               <div style={{ position:"absolute", top:10, right:10 }}>
                 <StatusBadge status={svc.status_tersedia}/>
@@ -785,9 +788,14 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
         </Field>
 
         {/* Preview */}
-        <div style={{ marginTop:"1rem", height:120, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
-          {form.emoji}
-          <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{form.tag}</div>
+        {/* Preview */}
+        <div style={{ marginTop:"1rem", height:120, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
+          {form.gambar_url ? (
+            <img src={form.gambar_url} alt="Preview" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+          ) : (
+            <span style={{ position:"relative", zIndex:1 }}>{form.emoji}</span>
+          )}
+          <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100, zIndex:2 }}>{form.tag}</div>
         </div>
       </Card>
 
@@ -1469,7 +1477,10 @@ function PortofolioAdminPage({ showToast }) {
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:"1rem" }}>
         {items.map(p => (
           <Card key={p.id_portofolio} style={{ padding:0, overflow:"hidden" }}>
-            <div style={{ height:120, background:p.img_bg || p.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
+            <div style={{ height:120, background:p.img_bg || p.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
+              {p.gambar_url && (
+                <img src={p.gambar_url} alt={p.judul} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+              )}
               {p.icon}
               {p.is_featured && <div style={{ position:"absolute", top:10, right:10, background:YELLOW, color:"#1C1200", fontSize:10, fontWeight:800, padding:".2rem .6rem", borderRadius:100 }}>⭐ BERANDA</div>}
               <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{p.tag}</div>
@@ -1615,8 +1626,13 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
         </div>
 
         {/* Preview */}
-        <div style={{ marginTop:"1.25rem", height:140, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
-          {form.icon}
+        {/* Preview */}
+        <div style={{ marginTop:"1.25rem", height:140, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
+          {form.gambar_url ? (
+            <img src={form.gambar_url} alt="Preview" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+          ) : (
+            <span style={{ position:"relative", zIndex:1 }}>{form.icon}</span>
+          )}
           <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{form.tag}</div>
           {form.is_featured && <div style={{ position:"absolute", top:10, right:10, background:YELLOW, color:"#1C1200", fontSize:10, fontWeight:800, padding:".2rem .6rem", borderRadius:100 }}>⭐ BERANDA</div>}
         </div>

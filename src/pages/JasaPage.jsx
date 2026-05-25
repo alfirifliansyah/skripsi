@@ -69,10 +69,14 @@ export default function JasaPage({
       {activeSvc && (
         <div onClick={()=>setActiveId(null)} className="modal-pad" style={{ position:"fixed", inset:0, zIndex:999, background:"rgba(15,27,61,.6)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"1rem", animation:"fadeIn .2s ease" }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:WHITE, borderRadius:20, overflow:"hidden", width:"min(720px,96vw)", boxShadow:"0 32px 80px rgba(15,27,61,.25)", animation:"slideUp .28s ease", maxHeight:"90vh", overflowY:"auto" }}>
-            <div style={{ height:180, background:activeSvc.imgBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:64, position:"relative" }}>
-              {activeSvc.emoji}
-              <span style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.35)", color:WHITE, fontSize:11, fontWeight:700, padding:".3rem .8rem", borderRadius:100 }}>{activeSvc.tag}</span>
-              <button onClick={()=>setActiveId(null)} style={{ position:"absolute", top:14, left:14, background:"rgba(255,255,255,.2)", border:"none", color:WHITE, width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}>←</button>
+            <div style={{ height:180, background:activeSvc.imgBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:64, position:"relative", overflow:"hidden" }}>
+              {activeSvc.gambar_url ? (
+                <img src={activeSvc.gambar_url} alt={activeSvc.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+              ) : (
+                <span>{activeSvc.emoji}</span>
+              )}
+              <span style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.35)", color:WHITE, fontSize:11, fontWeight:700, padding:".3rem .8rem", borderRadius:100, zIndex:2 }}>{activeSvc.tag}</span>
+              <button onClick={()=>setActiveId(null)} style={{ position:"absolute", top:14, left:14, background:"rgba(255,255,255,.2)", border:"none", color:WHITE, width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center", zIndex:2 }}>←</button>
             </div>
             <div className="modal-card" style={{ padding:"2rem" }}>
               <h3 style={{ fontWeight:800, fontSize:"1.3rem", color:DARK, marginBottom:".25rem" }}>{activeSvc.title}</h3>
@@ -166,9 +170,12 @@ export default function JasaPage({
                   onMouseOver={e=>{ e.currentTarget.style.borderColor=BLUE; e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 12px 32px rgba(27,79,216,.1)"; }}
                   onMouseOut={e=>{ e.currentTarget.style.borderColor="#E5EAF5"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
                   <div className="jasa-card-image" style={{ width:200, minWidth:200, height:140, borderRadius:14, background:svc.imgBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:52, flexShrink:0, position:"relative", overflow:"hidden" }}>
+                    {svc.gambar_url && (
+                      <img src={svc.gambar_url} alt={svc.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+                    )}
                     <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.18)" }}/>
-                    <span style={{ position:"relative" }}>{svc.emoji}</span>
-                    <div style={{ position:"absolute", top:10, left:10, width:28, height:28, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:WHITE }}>{String(i+1).padStart(2,"0")}</div>
+                    {!svc.gambar_url && <span style={{ position:"relative" }}>{svc.emoji}</span>}
+                    <div style={{ position:"absolute", top:10, left:10, width:28, height:28, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:WHITE, zIndex:1 }}>{String(i+1).padStart(2,"0")}</div>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:".6rem", flexWrap:"wrap" }}>

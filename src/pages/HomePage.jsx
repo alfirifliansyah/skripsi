@@ -51,6 +51,13 @@ export default function HomePage({
 
       {/* ── HERO ── */}
       <section style={{ minHeight:"100vh", display:"flex", alignItems:"center", paddingTop:68, position:"relative", overflow:"hidden" }}>
+        {/* Hero image background (kalau admin sudah upload) */}
+        {pengaturan.hero_image_url && (
+          <div style={{ position:"absolute", inset:0, zIndex:0 }}>
+            <img src={pengaturan.hero_image_url} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", opacity:.18 }}/>
+            <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg, rgba(247,249,253,.4) 0%, rgba(247,249,253,.95) 100%)" }}/>
+          </div>
+        )}
         <div className="deco-circle-lg" style={{ position:"absolute", top:"10%", right:"2%", width:440, height:440, borderRadius:"50%", background:BLUE_L, zIndex:0 }}/>
         <div className="deco-circle-sm" style={{ position:"absolute", bottom:"5%", left:"-4%", width:220, height:220, borderRadius:"50%", background:YELLOW_L, zIndex:0 }}/>
         <div style={{ position:"absolute", top:0, left:0, right:0, height:4, background:`linear-gradient(90deg,${BLUE},${YELLOW})` }}/>
@@ -241,8 +248,11 @@ export default function HomePage({
                   <div onClick={onGoPortfolio} style={{ background:item.img_bg || item.imgBg || BLUE_L, border:`1.5px solid #C7D5F8`, borderRadius:16, padding:"1.75rem", aspectRatio:"16/9", display:"flex", flexDirection:"column", cursor:"pointer", transition:"transform .25s,box-shadow .25s", color:WHITE, position:"relative", overflow:"hidden" }}
                     onMouseOver={e=>{ e.currentTarget.style.transform="translateY(-4px)"; e.currentTarget.style.boxShadow="0 12px 32px rgba(27,79,216,.18)"; }}
                     onMouseOut={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
-                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg,rgba(0,0,0,0) 50%,rgba(0,0,0,.5) 100%)" }}/>
-                    <div style={{ fontSize:42, marginBottom:"auto", position:"relative" }}>{item.icon || "🎬"}</div>
+                    {item.gambar_url && (
+                      <img src={item.gambar_url} alt={item.judul || item.label} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+                    )}
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg,rgba(0,0,0,0) 50%,rgba(0,0,0,.7) 100%)" }}/>
+                    <div style={{ fontSize:42, marginBottom:"auto", position:"relative" }}>{!item.gambar_url && (item.icon || "🎬")}</div>
                     <div style={{ position:"relative" }}>
                       <span style={{ background: item.tag_color || item.tagColor || YELLOW, color: WHITE, fontSize:10, fontWeight:700, padding:".25rem .65rem", borderRadius:4, letterSpacing:".06em", display:"inline-block", marginBottom:6 }}>{item.tag || item.kategori}</span>
                       <div style={{ fontWeight:700, fontSize:16, color:WHITE }}>{item.judul || item.label}</div>
@@ -288,7 +298,13 @@ export default function HomePage({
                 <Anim key={svc.id} delay={i*.1}>
                   <div onClick={onGoJasa} className="jasa-card" style={{ background:BG, border:"1.5px solid #E5EAF5", borderRadius:16, padding:"1.5rem", display:"flex", gap:"1.5rem", cursor:"pointer", alignItems:"center", transition:"border-color .25s,transform .25s,box-shadow .25s" }}
                     onMouseOver={e=>{ e.currentTarget.style.borderColor=BLUE; e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 8px 24px rgba(27,79,216,.1)"; }} onMouseOut={e=>{ e.currentTarget.style.borderColor="#E5EAF5"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
-                    <div className="jasa-card-image" style={{ width:140, height:96, borderRadius:12, flexShrink:0, background:svc.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:36 }}>{svc.emoji || svc.icon}</div>
+                    <div className="jasa-card-image" style={{ width:140, height:96, borderRadius:12, flexShrink:0, background:svc.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, overflow:"hidden", position:"relative" }}>
+                      {svc.gambar_url ? (
+                        <img src={svc.gambar_url} alt={svc.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+                      ) : (
+                        <span>{svc.emoji || svc.icon}</span>
+                      )}
+                    </div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
                         <span style={{ background:BLUE_L, color:BLUE, fontSize:11, fontWeight:700, padding:".2rem .65rem", borderRadius:100 }}>{svc.tag || "Layanan"}</span>

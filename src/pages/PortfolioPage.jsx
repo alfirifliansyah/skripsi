@@ -22,16 +22,17 @@ export default function PortfolioPage({
 
   const items = portofolio.length > 0
     ? portofolio.map(p => ({
-        id:        p.id_portofolio || p.id,
-        title:     p.judul || p.label,
-        client:    p.klien || "—",
-        year:      p.tanggal_proyek ? new Date(p.tanggal_proyek).getFullYear() : "",
-        desc:      p.deskripsi || "",
-        emoji:     p.icon || "🎬",
-        gradient:  p.img_bg || p.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)",
-        tag:       p.tag || p.kategori || "PROJECT",
-        kategori:  p.kategori || "Umum",
-        span:      "normal",
+        id:         p.id_portofolio || p.id,
+        title:      p.judul || p.label,
+        client:     p.klien || "—",
+        year:       p.tanggal_proyek ? new Date(p.tanggal_proyek).getFullYear() : "",
+        desc:       p.deskripsi || "",
+        emoji:      p.icon || "🎬",
+        gradient:   p.img_bg || p.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)",
+        gambar_url: p.gambar_url || null,
+        tag:        p.tag || p.kategori || "PROJECT",
+        kategori:   p.kategori || "Umum",
+        span:       "normal",
       }))
     : ALL_PROJECTS;
 
@@ -53,10 +54,14 @@ export default function PortfolioPage({
       {active && (
         <div onClick={()=>setActive(null)} className="modal-pad" style={{ position:"fixed", inset:0, zIndex:999, background:"rgba(15,27,61,.6)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"1rem", animation:"fadeIn .2s ease" }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:WHITE, borderRadius:20, overflow:"hidden", width:"min(620px,96vw)", boxShadow:"0 32px 80px rgba(15,27,61,.25)", animation:"slideUp .28s ease" }}>
-            <div style={{ height:200, background:active.gradient, display:"flex", alignItems:"center", justifyContent:"center", fontSize:72, position:"relative" }}>
-              {active.emoji}
-              <span style={{ position:"absolute", top:16, right:16, background:"rgba(255,255,255,.25)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.4)", color:WHITE, fontSize:11, fontWeight:700, padding:".3rem .8rem", borderRadius:100 }}>{active.tag}</span>
-              <button onClick={()=>setActive(null)} style={{ position:"absolute", top:14, left:16, background:"rgba(255,255,255,.2)", border:"none", color:WHITE, width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}>←</button>
+            <div style={{ height:200, background:active.gradient, display:"flex", alignItems:"center", justifyContent:"center", fontSize:72, position:"relative", overflow:"hidden" }}>
+              {active.gambar_url ? (
+                <img src={active.gambar_url} alt={active.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+              ) : (
+                <span>{active.emoji}</span>
+              )}
+              <span style={{ position:"absolute", top:16, right:16, background:"rgba(255,255,255,.25)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.4)", color:WHITE, fontSize:11, fontWeight:700, padding:".3rem .8rem", borderRadius:100, zIndex:2 }}>{active.tag}</span>
+              <button onClick={()=>setActive(null)} style={{ position:"absolute", top:14, left:16, background:"rgba(255,255,255,.2)", border:"none", color:WHITE, width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center", zIndex:2 }}>←</button>
             </div>
             <div className="modal-card" style={{ padding:"2rem" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:".75rem", gap:8 }}>
@@ -114,9 +119,13 @@ export default function PortfolioPage({
                 <div onClick={()=>setActive(item)} className="porto-card" style={{ borderRadius:16, overflow:"hidden", cursor:"pointer", background:item.gradient, position:"relative", height:240, display:"flex", flexDirection:"column", justifyContent:"flex-end", transition:"transform .28s, box-shadow .28s" }}
                   onMouseOver={e=>{ e.currentTarget.style.transform="translateY(-5px) scale(1.01)"; e.currentTarget.style.boxShadow="0 20px 48px rgba(27,79,216,.2)"; }}
                   onMouseOut={e=>{ e.currentTarget.style.transform="translateY(0) scale(1)"; e.currentTarget.style.boxShadow="none"; }}>
-                  <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-55%)", fontSize:72, opacity:.22, pointerEvents:"none", userSelect:"none" }}>{item.emoji}</div>
-                  <span style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", color:WHITE, fontSize:10, fontWeight:700, padding:".25rem .7rem", borderRadius:100, border:"1px solid rgba(255,255,255,.3)" }}>{item.tag}</span>
-                  <div style={{ background:"linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%)", padding:"1.5rem 1.75rem" }}>
+                  {item.gambar_url ? (
+                    <img src={item.gambar_url} alt={item.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+                  ) : (
+                    <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-55%)", fontSize:72, opacity:.22, pointerEvents:"none", userSelect:"none" }}>{item.emoji}</div>
+                  )}
+                  <span style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", color:WHITE, fontSize:10, fontWeight:700, padding:".25rem .7rem", borderRadius:100, border:"1px solid rgba(255,255,255,.3)", zIndex:2 }}>{item.tag}</span>
+                  <div style={{ background:"linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%)", padding:"1.5rem 1.75rem", position:"relative", zIndex:1 }}>
                     <div style={{ fontSize:11, color:"rgba(255,255,255,.65)", marginBottom:4 }}>{item.client}{item.year ? ` · ${item.year}` : ""}</div>
                     <div style={{ fontWeight:700, fontSize:16, color:WHITE, marginBottom:4 }}>{item.title}</div>
                     <div style={{ fontSize:12, color:"rgba(255,255,255,.7)", display:"flex", alignItems:"center", gap:5 }}>Lihat detail <span>→</span></div>
