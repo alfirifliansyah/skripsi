@@ -260,8 +260,12 @@ export const adminAPI = {
     return res.data;
   },
 
-  updateStatusPesanan: async (idPemesanan, status) => {
-    const res = await PUT(`/admin/pemesanan/${idPemesanan}/status`, { status_pesanan: status }, true);
+  updateStatusPesanan: async (idPemesanan, statusPesanan, subStatusPesanan = null) => {
+    const body = { status_pesanan: statusPesanan };
+    if (subStatusPesanan !== undefined && subStatusPesanan !== null) {
+      body.sub_status_pesanan = subStatusPesanan;
+    }
+    const res = await PUT(`/admin/pemesanan/${idPemesanan}/status`, body, true);
     return res.data;
   },
 
@@ -369,90 +373,4 @@ export const pengaturanAPI = {
 export const ping = async () => {
   try { const res = await GET("/ping"); return res.status === "ok"; }
   catch { return false; }
-};
-
-/*
- * ============================================================
- * SNIPPET INI DITEMPATKAN DI AKHIR FILE src/services/api.js
- * ============================================================
- *
- * INSTRUKSI:
- * 1. Buka file src/services/api.js
- * 2. Scroll ke paling bawah (setelah `export const ping = ...`)
- * 3. Copy SELURUH isi blok kode di bawah (mulai dari komentar
- *    "UPLOAD GAMBAR" sampai akhir file)
- * 4. Paste di akhir file api.js
- * 5. Save
- *
- * Pastikan blok ini berada SETELAH definisi `BASE_URL`, `getToken`,
- * dan `handle` (yang sudah ada di file). Karena ditaruh di akhir,
- * itu otomatis terpenuhi.
- * ============================================================
- */
-
-/* ══════════════════════════════════════════════════════════
-   UPLOAD GAMBAR (admin only)
-   ══════════════════════════════════════════════════════════
-   Endpoint:
-     POST /api/admin/upload  (multipart/form-data)
-       body: { file: File, folder: 'jasa'|'portofolio'|'hero' }
-     DELETE /api/admin/upload  (json)
-       body: { path: 'uploads/...' }
-   ══════════════════════════════════════════════════════════ */
-export const uploadAPI = {
-  /**
-   * Upload satu file gambar ke backend.
-   * @param {File}   file   - File object dari <input type="file">
-   * @param {string} folder - 'jasa' | 'portofolio' | 'hero'
-   * @returns {Promise<{path: string, url: string}>}
-   *
-   * Catatan: TIDAK menggunakan helper POST() biasa karena
-   * untuk multipart/form-data, kita TIDAK boleh set Content-Type
-   * manual — browser yang harus mengaturnya beserta boundary.
-   */
-  upload: async (file, folder) => {
-    if (!file)   throw new Error("File tidak boleh kosong");
-    if (!folder) throw new Error("Folder harus diisi (jasa/portofolio/hero)");
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", folder);
-
-    const token = getToken();
-    const headers = { Accept: "application/json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    // PENTING: jangan set "Content-Type" — biarkan browser yang set
-    // dengan boundary multipart yang benar.
-
-    const res = await fetch(`${BASE_URL}/admin/upload`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
-
-    const json = await handle(res);
-    return json.data; // { path, url }
-  },
-
-  /**
-   * Hapus file gambar dari storage.
-   * Biasanya dipakai untuk cleanup manual; controller backend
-   * sudah otomatis hapus file lama saat ganti via update().
-   */
-  delete: async (path) => {
-    if (!path) return;
-    const token = getToken();
-    const headers = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-
-    const res = await fetch(`${BASE_URL}/admin/upload`, {
-      method: "DELETE",
-      headers,
-      body: JSON.stringify({ path }),
-    });
-    return handle(res);
-  },
 };

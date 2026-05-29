@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { authAPI, adminAPI, pemesananAPI, jasaAPI, jadwalAPI, portofolioAPI, pengaturanAPI, getToken } from "./services/api";
-import ImageUploader from "./components/admin/ImageUploader";
+import { STATUS_DISPLAY, ADMIN_STATUS_OPTIONS, getDisplayStatus, mapDisplayToBackend } from "./constants/status";
 
 /* ─── Design tokens ─── */
 const SIDEBAR_BG  = "#0D1117";
@@ -24,12 +24,19 @@ const YELLOW      = "#FACC15";
 const fmt = (n) => "Rp " + Number(n || 0).toLocaleString("id-ID");
 
 const STATUS_CFG = {
+  // ── Status lama (backend mentah) — tetap ada utk kompatibilitas ──
   selesai:        { label:"Selesai",         color:SUCCESS, bg:SUCCESS_L, icon:"✅" },
   proses:         { label:"Diproses",        color:ACCENT,  bg:ACCENT_L,  icon:"⚙️" },
   menunggu:       { label:"Menunggu",        color:WARNING, bg:WARNING_L, icon:"⏳" },
   batal:          { label:"Dibatalkan",      color:DANGER,  bg:DANGER_L,  icon:"❌" },
   tersedia:       { label:"Tersedia",        color:SUCCESS, bg:SUCCESS_L, icon:"🟢" },
   tidak_tersedia: { label:"Tidak Tersedia",  color:MUTED,   bg:"#F1F5F9", icon:"⚫" },
+  // ── 7 status display baru (status_pesanan + sub_status) ──
+  menunggu_pembayaran: { label:"Menunggu Pembayaran",         color:"#D97706", bg:WARNING_L, icon:"💳" },
+  dikonfirmasi:        { label:"Pesanan Dikonfirmasi",        color:"#2563EB", bg:"#DBEAFE", icon:"✓" },
+  persiapan:           { label:"Tim Sedang Persiapan",        color:ACCENT,    bg:ACCENT_L,  icon:"🛠️" },
+  berlangsung:         { label:"Acara Sedang Berlangsung",    color:"#7C3AED", bg:"#EDE9FE", icon:"📡" },
+  acara_selesai:       { label:"Acara Selesai",               color:"#0891B2", bg:"#CFFAFE", icon:"🎬" },
 };
 
 const POLL_ADMIN_DASHBOARD = 15000; // 15 detik
@@ -359,21 +366,29 @@ function OrdersPage({ showToast }) {
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
   }, [load]);
 
-  const handleStatusChange = async (idOrCode, newStatus) => {
+  const handleStatusChange = async (idOrCode, newDisplayKey) => {
     try {
       const ord = orders.find(o => (o.id_pemesanan === idOrCode || o.kode_pemesanan === idOrCode));
       const id = ord?.id_pemesanan || idOrCode;
-      await adminAPI.updateStatusPesanan(id, newStatus);
+      const { status_pesanan, sub_status_pesanan } = mapDisplayToBackend(newDisplayKey);
+      await adminAPI.updateStatusPesanan(id, status_pesanan, sub_status_pesanan);
       showToast({ type:"success", msg:"Status pesanan diperbarui" });
       await load();
       if (active && active.id_pemesanan === id) {
-        setActive({ ...active, status_pesanan: newStatus, status: newStatus });
+        setActive({
+          ...active,
+          status_pesanan,
+          status: status_pesanan,
+          sub_status_pesanan,
+          sub_status: sub_status_pesanan,
+          display_status: newDisplayKey,
+        });
       }
     } catch (e) { showToast({ type:"error", msg:e.message }); }
   };
 
-  const filters = ["semua","menunggu","proses","selesai","batal"];
-  const shown = filter==="semua" ? orders : orders.filter(o => (o.status_pesanan || o.status) === filter);
+  const filters = ["semua","menunggu_pembayaran","dikonfirmasi","persiapan","berlangsung","acara_selesai","selesai","batal"];
+  const shown = filter==="semua" ? orders : orders.filter(o => getDisplayStatus(o) === filter);
 
   if (loading && orders.length === 0) return <Spinner/>;
 
@@ -407,7 +422,7 @@ function OrdersPage({ showToast }) {
             { key:"svcName",     label:"Layanan", render:(v,r)=>(<div><div>{v}</div><div style={{ fontSize:11, color:MUTED }}>{r.paket || r.paket_label}</div></div>) },
             { key:"date",        label:"Tanggal", nowrap:true },
             { key:"total_harga", label:"Total", nowrap:true, render:(v,r)=> <strong style={{ color:ACCENT }}>{fmt(v || r.total)}</strong> },
-            { key:"status_pesanan", label:"Status", render:(v,r)=> <StatusBadge status={v || r.status}/> },
+            { key:"status_pesanan", label:"Status", render:(v,r)=> <StatusBadge status={getDisplayStatus(r)}/> },
             { key:"actions", label:"Aksi", render:(_,r)=>(
               <button onClick={()=>setActive(r)} style={{ background:ACCENT, color:WHITE, border:"none", padding:".4rem .9rem", borderRadius:7, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Detail</button>
             )},
@@ -425,7 +440,7 @@ function OrdersPage({ showToast }) {
               <div>
                 <div style={{ fontFamily:"monospace", fontSize:14, fontWeight:800, color:ACCENT }}>{active.kode_pemesanan || active.kode}</div>
                 <h3 style={{ fontWeight:800, fontSize:"1.2rem", color:DARK, marginTop:4 }}>{active.svcName}</h3>
-                <div style={{ marginTop:6 }}><StatusBadge status={active.status_pesanan || active.status}/></div>
+                <div style={{ marginTop:6 }}><StatusBadge status={getDisplayStatus(active)}/></div>
               </div>
               <button onClick={()=>setActive(null)} style={{ background:BG, border:`1px solid ${BORDER}`, width:32, height:32, borderRadius:8, cursor:"pointer", fontSize:18 }}>×</button>
             </div>
@@ -453,9 +468,9 @@ function OrdersPage({ showToast }) {
             <div style={{ marginTop:"1.5rem" }}>
               <p style={{ fontSize:12, fontWeight:700, color:MUTED, marginBottom:8 }}>UBAH STATUS:</p>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                {["menunggu","proses","selesai","batal"].map(s=>{
+                {ADMIN_STATUS_OPTIONS.map(s=>{
                   const cfg = STATUS_CFG[s];
-                  const cur = active.status_pesanan || active.status;
+                  const cur = getDisplayStatus(active);
                   return (
                     <button key={s} onClick={()=>handleStatusChange(active.id_pemesanan, s)} disabled={cur===s}
                       style={{ background:cur===s?cfg.bg:WHITE, color:cur===s?cfg.color:DARK, border:`1.5px solid ${cur===s?cfg.color:BORDER}`, padding:".5rem 1rem", borderRadius:8, fontSize:12, fontWeight:700, cursor:cur===s?"default":"pointer", fontFamily:"inherit", opacity:cur===s?.7:1 }}>
@@ -464,6 +479,9 @@ function OrdersPage({ showToast }) {
                   );
                 })}
               </div>
+              <p style={{ fontSize:11, color:MUTED, marginTop:8 }}>
+                💡 Pesanan "Menunggu Pembayaran" otomatis jadi "Pesanan Dikonfirmasi" setelah pembayaran berhasil.
+              </p>
             </div>
           </div>
         </div>
@@ -579,10 +597,7 @@ function ServicesPage({ showToast }) {
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))", gap:"1rem" }}>
         {services.map(svc => (
           <Card key={svc.id_jasa || svc.id} style={{ padding:0, overflow:"hidden" }}>
-            <div style={{ height:120, background:svc.img_bg || svc.imgBg || BG_PRESETS[0], display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
-              {svc.gambar_url && (
-                <img src={svc.gambar_url} alt={svc.nama_jasa || svc.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
-                    )}
+            <div style={{ height:120, background:svc.img_bg || svc.imgBg || BG_PRESETS[0], display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
               {svc.emoji || svc.icon || "🎬"}
               <div style={{ position:"absolute", top:10, right:10 }}>
                 <StatusBadge status={svc.status_tersedia}/>
@@ -633,8 +648,6 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
     tag:              initial.tag || "Layanan",
     tag_color:        initial.tag_color || initial.tagColor || "#1B4FD8",
     img_bg:           initial.img_bg || initial.imgBg || BG_PRESETS[0],
-    gambar:           initial.gambar     || null,
-    gambar_url:       initial.gambar_url || null,
     features:         Array.isArray(initial.features) ? [...initial.features] : [],
     packages:         Array.isArray(initial.packages) ? initial.packages.map(p => ({
                         id: p.id, label: p.label, hours: p.hours || "", price: Number(p.price || 0),
@@ -765,19 +778,6 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
             </select>
           </Field>
         </div>
-        <Field label="GAMBAR JASA (OPSIONAL — JIKA DIISI, AKAN MENGGANTI GRADIENT)" full>
-          <ImageUploader
-            value={form.gambar}
-            valueUrl={form.gambar_url}
-            folder="jasa"
-            onChange={(path, url) => setForm(f => ({ ...f, gambar: path, gambar_url: url }))}
-            onError={(msg) => showToast({ type:"error", msg })}
-            height={180}
-          />
-          <p style={{ fontSize:11, color:MUTED, marginTop:6 }}>
-            Rekomendasi rasio 16:9 atau 4:3 untuk hasil terbaik. Maksimal 5MB.
-          </p>
-        </Field>
         <Field label="BACKGROUND GRADIENT (PILIH PRESET / CUSTOM)" full>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:6, marginBottom:8 }}>
             {BG_PRESETS.map((bg,i)=>(
@@ -788,14 +788,9 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
         </Field>
 
         {/* Preview */}
-        {/* Preview */}
-        <div style={{ marginTop:"1rem", height:120, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
-          {form.gambar_url ? (
-            <img src={form.gambar_url} alt="Preview" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
-          ) : (
-            <span style={{ position:"relative", zIndex:1 }}>{form.emoji}</span>
-          )}
-          <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100, zIndex:2 }}>{form.tag}</div>
+        <div style={{ marginTop:"1rem", height:120, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
+          {form.emoji}
+          <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{form.tag}</div>
         </div>
       </Card>
 
@@ -1477,10 +1472,7 @@ function PortofolioAdminPage({ showToast }) {
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:"1rem" }}>
         {items.map(p => (
           <Card key={p.id_portofolio} style={{ padding:0, overflow:"hidden" }}>
-            <div style={{ height:120, background:p.img_bg || p.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
-              {p.gambar_url && (
-                <img src={p.gambar_url} alt={p.judul} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
-              )}
+            <div style={{ height:120, background:p.img_bg || p.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
               {p.icon}
               {p.is_featured && <div style={{ position:"absolute", top:10, right:10, background:YELLOW, color:"#1C1200", fontSize:10, fontWeight:800, padding:".2rem .6rem", borderRadius:100 }}>⭐ BERANDA</div>}
               <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{p.tag}</div>
@@ -1519,8 +1511,6 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
     tanggal_proyek: initial.tanggal_proyek || "",
     icon: initial.icon || "🎬",
     img_bg: initial.img_bg || initial.imgBg || BG_PRESETS[0],
-    gambar:     initial.gambar     || null,
-    gambar_url: initial.gambar_url || null,
     tag: initial.tag || "PROJECT",
     tag_color: initial.tag_color || initial.tagColor || "#1B4FD8",
     is_featured: !!initial.is_featured,
@@ -1599,19 +1589,6 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
             </select>
           </Field>
         </div>
-        <Field label="GAMBAR PORTOFOLIO (OPSIONAL — JIKA DIISI, AKAN MENGGANTI GRADIENT)" full>
-          <ImageUploader
-            value={form.gambar}
-            valueUrl={form.gambar_url}
-            folder="portofolio"
-            onChange={(path, url) => setForm({ ...form, gambar: path, gambar_url: url })}
-            onError={(msg) => showToast({ type:"error", msg })}
-            height={180}
-          />
-          <p style={{ fontSize:11, color:MUTED, marginTop:6 }}>
-            Rekomendasi rasio 16:9 atau 4:3. Maksimal 5MB.
-          </p>
-        </Field>
         <Field label="BACKGROUND GRADIENT" full>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:6, marginBottom:8 }}>
             {BG_PRESETS.map((bg,i)=>(
@@ -1626,13 +1603,8 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
         </div>
 
         {/* Preview */}
-        {/* Preview */}
-        <div style={{ marginTop:"1.25rem", height:140, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
-          {form.gambar_url ? (
-            <img src={form.gambar_url} alt="Preview" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
-          ) : (
-            <span style={{ position:"relative", zIndex:1 }}>{form.icon}</span>
-          )}
+        <div style={{ marginTop:"1.25rem", height:140, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
+          {form.icon}
           <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{form.tag}</div>
           {form.is_featured && <div style={{ position:"absolute", top:10, right:10, background:YELLOW, color:"#1C1200", fontSize:10, fontWeight:800, padding:".2rem .6rem", borderRadius:100 }}>⭐ BERANDA</div>}
         </div>
@@ -1712,23 +1684,6 @@ function BerandaSettingsPage({ showToast }) {
           {saving ? "Menyimpan..." : "💾 Simpan Semua"}
         </button>
       </div>
-
-      <Card style={{ marginBottom:"1rem" }}>
-        <SectionTitle>🖼️ Gambar Hero (Banner Atas Beranda)</SectionTitle>
-        <p style={{ fontSize:12, color:MUTED, marginBottom:"1rem", marginTop:"-.5rem" }}>
-          Gambar besar yang tampil di bagian paling atas halaman beranda. Kosongkan jika ingin pakai default.
-        </p>
-        <ImageUploader
-          value={settings.hero_image || null}
-          valueUrl={settings.hero_image_url || null}
-          folder="hero"
-          onChange={(path, url) => {
-            setSettings(s => ({ ...s, hero_image: path || "", hero_image_url: url || "" }));
-          }}
-          onError={(msg) => showToast({ type:"error", msg })}
-          height={220}
-        />
-      </Card>
 
       {sections.map(section => (
         <Card key={section.title} style={{ marginBottom:"1rem" }}>

@@ -104,6 +104,8 @@ export function normalizeOrder(o) {
     time:           o.time || o.waktu_pelaksanaan || "-",
     total:          Number(o.total || o.total_harga || 0),
     status:         o.status || o.status_pesanan || "menunggu",
+    sub_status:     o.sub_status || o.sub_status_pesanan || null,
+    display_status: o.display_status || null,
     company:        o.company || o.perusahaan || "-",
     nama_pic:       o.nama_pic || o.name,
     telepon_pic:    o.telepon_pic || o.phone,

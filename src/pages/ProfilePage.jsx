@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BLUE, BLUE_L, BLUE_M, BG, WHITE, DARK, MUTED } from "../constants/colors";
-import { STATUS_CONFIG, fmt } from "../constants/data";
+import { fmt } from "../constants/data";
+import { STATUS_DISPLAY, getDisplayStatus } from "../constants/status";
 import { authAPI } from "../services/api";
 import Navbar from "../components/layout/Navbar";
 import Anim from "../components/ui/Anim";
@@ -275,7 +276,7 @@ export default function ProfilePage({
           ) : (
             <div style={{ display:"flex",flexDirection:"column",gap:".85rem", marginBottom:"2rem" }}>
               {recentOrders.map(ord => {
-                const st  = STATUS_CONFIG[ord.status] || STATUS_CONFIG.menunggu;
+                const st  = STATUS_DISPLAY[getDisplayStatus(ord)] || STATUS_DISPLAY.menunggu_pembayaran;
                 const svc = jasaList.find(s => s.id === ord.svc) || jasaList.find(s => s.id_jasa === ord.svc);
                 return (
                   <div key={ord.id_pemesanan || ord.id} style={{ background:WHITE,border:"1.5px solid #E5EAF5",borderRadius:14,padding:"1.1rem 1.4rem",display:"flex",alignItems:"center",gap:"1rem",flexWrap:"wrap" }}>

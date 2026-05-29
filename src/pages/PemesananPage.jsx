@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BLUE, BLUE_L, BG, WHITE, DARK, MUTED, YELLOW_L } from "../constants/colors";
-import { STATUS_CONFIG, fmt } from "../constants/data";
+import { fmt } from "../constants/data";
+import { STATUS_DISPLAY, FILTER_STATUS_OPTIONS, getDisplayStatus } from "../constants/status";
 import { pemesananAPI } from "../services/api";
 import Navbar from "../components/layout/Navbar";
 import Anim from "../components/ui/Anim";
@@ -185,8 +186,8 @@ export default function PemesananPage({
     );
   }
 
-  const filters = ["semua", "menunggu", "proses", "selesai", "batal"];
-  const shown   = filterStatus === "semua" ? orders : orders.filter(o => o.status === filterStatus);
+  const filters = FILTER_STATUS_OPTIONS;
+  const shown   = filterStatus === "semua" ? orders : orders.filter(o => getDisplayStatus(o) === filterStatus);
 
   return (
     <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:BG, color:DARK, minHeight:"100vh" }}>
@@ -207,7 +208,7 @@ export default function PemesananPage({
 
       {activeOrder && (() => {
         const ord = activeOrder;
-        const st  = STATUS_CONFIG[ord.status] || STATUS_CONFIG.menunggu;
+        const st  = STATUS_DISPLAY[getDisplayStatus(ord)] || STATUS_DISPLAY.menunggu_pembayaran;
         const svc = jasaList.find(s => s.id === ord.svc) || jasaList.find(s => s.id_jasa === ord.svc);
 
         return (
@@ -357,9 +358,9 @@ export default function PemesananPage({
           <div className="grid-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"1rem", marginBottom:"2.5rem" }}>
             {[
               { label:"Total Pesanan", val:orders.length,                                  bg:BLUE_L,    text:BLUE       },
-              { label:"Menunggu",      val:orders.filter(o => o.status==="menunggu").length, bg:YELLOW_L, text:"#92400E" },
-              { label:"Sedang Proses", val:orders.filter(o => o.status==="proses").length,  bg:BLUE_L,   text:BLUE       },
-              { label:"Selesai",       val:orders.filter(o => o.status==="selesai").length, bg:"#ECFDF5", text:"#059669" },
+              { label:"Menunggu Bayar", val:orders.filter(o => getDisplayStatus(o)==="menunggu_pembayaran").length, bg:YELLOW_L, text:"#92400E" },
+              { label:"Diproses",       val:orders.filter(o => ["dikonfirmasi","persiapan","berlangsung","acara_selesai"].includes(getDisplayStatus(o))).length,  bg:BLUE_L,   text:BLUE       },
+              { label:"Selesai",        val:orders.filter(o => getDisplayStatus(o)==="selesai").length, bg:"#ECFDF5", text:"#059669" },
             ].map(s => (
               <div key={s.label} style={{ background:s.bg, borderRadius:14, padding:"1.25rem", textAlign:"center" }}>
                 <div style={{ fontSize:28, fontWeight:800, color:s.text }}>{s.val}</div>
@@ -378,7 +379,7 @@ export default function PemesananPage({
                   onClick={() => setFilterStatus(f)}
                   style={{ background: filterStatus===f ? BLUE : WHITE, color: filterStatus===f ? WHITE : DARK, border:`1.5px solid ${filterStatus===f ? BLUE : "#D1D9EF"}`, padding:".4rem 1rem", borderRadius:100, fontSize:13, fontWeight: filterStatus===f ? 700 : 500, cursor:"pointer", fontFamily:"inherit", transition:"all .2s" }}
                 >
-                  {f === "semua" ? "Semua" : STATUS_CONFIG[f]?.label || f}
+                  {f === "semua" ? "Semua" : STATUS_DISPLAY[f]?.label || f}
                 </button>
               ))}
             </div>
@@ -417,7 +418,7 @@ export default function PemesananPage({
         ) : (
           <div style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
             {shown.map((ord, i) => {
-              const st  = STATUS_CONFIG[ord.status] || STATUS_CONFIG.menunggu;
+              const st  = STATUS_DISPLAY[getDisplayStatus(ord)] || STATUS_DISPLAY.menunggu_pembayaran;
               const svc = jasaList.find(s => s.id === ord.svc) || jasaList.find(s => s.id_jasa === ord.svc);
               return (
                 <Anim key={ord.id_pemesanan || ord.id || i} delay={i * 0.04}>
