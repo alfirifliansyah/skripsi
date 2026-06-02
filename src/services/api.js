@@ -106,6 +106,23 @@ export const authAPI = {
     try { await POST("/logout", {}, true); } catch {} finally { removeToken(); }
   },
 
+  /**
+   * Lupa password — submit email.
+   * Backend akan kirim email (lewat Mailtrap di dev) berisi link reset.
+   * Selalu return success demi keamanan (anti email enumeration).
+   */
+  forgotPassword: async (email) => {
+    return await POST("/forgot-password", { email });
+  },
+
+  /**
+   * Reset password — submit token + password baru.
+   * Token didapat dari URL query parameter saat user klik link di email.
+   */
+  resetPassword: async (payload) => {
+    return await POST("/reset-password", payload);
+  },
+
   /** Auto-login: dipanggil saat App mount kalau ada token */
   me: async () => {
     const res = await GET("/me", true);
@@ -260,12 +277,8 @@ export const adminAPI = {
     return res.data;
   },
 
-  updateStatusPesanan: async (idPemesanan, statusPesanan, subStatusPesanan = null) => {
-    const body = { status_pesanan: statusPesanan };
-    if (subStatusPesanan !== undefined && subStatusPesanan !== null) {
-      body.sub_status_pesanan = subStatusPesanan;
-    }
-    const res = await PUT(`/admin/pemesanan/${idPemesanan}/status`, body, true);
+  updateStatusPesanan: async (idPemesanan, status) => {
+    const res = await PUT(`/admin/pemesanan/${idPemesanan}/status`, { status_pesanan: status }, true);
     return res.data;
   },
 

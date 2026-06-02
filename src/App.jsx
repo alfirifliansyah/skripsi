@@ -4,7 +4,9 @@ import { normalizeJasa, normalizeOrder } from "./constants/data";
 import { authAPI, jasaAPI, pemesananAPI, portofolioAPI, pengaturanAPI, getToken } from "./services/api";
 
 import LoginModal    from "./components/auth/LoginModal";
-import RegisterModal from "./components/auth/RegisterModal";
+import RegisterModal       from "./components/auth/RegisterModal";
+import ForgotPasswordModal from "./components/auth/ForgotPasswordModal";
+import ResetPasswordModal  from "./components/auth/ResetPasswordModal";
 
 import HomePage      from "./pages/HomePage";
 import PortfolioPage from "./pages/PortfolioPage";
@@ -25,10 +27,31 @@ export default function App() {
   /* ── Global state ── */
   const [page,    setPage]    = useState("home");
   const [modal,   setModal]   = useState(null);
+  const [resetInfo, setResetInfo] = useState(null); // {token, email} dari URL query
   const [bookSvc, setBookSvc] = useState(null);
 
   const [user,        setUser]        = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+
+  /* ── Detect reset-password URL on mount ──
+     Saat user buka link dari email:
+       http://localhost:5173/reset-password?token=xxx&email=user@example.com
+     Otomatis tampilkan ResetPasswordModal. */
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const path = url.pathname;
+    const token = url.searchParams.get("token");
+    const email = url.searchParams.get("email");
+    if (path === "/reset-password" && token && email) {
+      setResetInfo({ token, email });
+    }
+  }, []);
+
+  // Helper: clear URL params setelah reset selesai
+  const clearResetUrl = () => {
+    window.history.replaceState({}, "", "/");
+    setResetInfo(null);
+  };
 
   const [jasaList,    setJasaList]    = useState([]);
   const [jasaLoading, setJasaLoading] = useState(true);
@@ -321,8 +344,10 @@ export default function App() {
     <>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=DM+Serif+Display:ital@1&display=swap" rel="stylesheet"/>
 
-      {modal==="login"    && <LoginModal    onClose={()=>setModal(null)} onSwitch={()=>setModal("register")} onSuccess={handleLogin}/>}
+      {modal==="login"    && <LoginModal    onClose={()=>setModal(null)} onSwitch={()=>setModal("register")} onSuccess={handleLogin} onForgotPassword={()=>setModal("forgot")}/>}
       {modal==="register" && <RegisterModal onClose={()=>setModal(null)} onSwitch={()=>setModal("login")}   onSuccess={handleRegister}/>}
+      {modal==="forgot"   && <ForgotPasswordModal onClose={()=>setModal(null)} onBackToLogin={()=>setModal("login")}/>}
+      {resetInfo          && <ResetPasswordModal token={resetInfo.token} email={resetInfo.email} onClose={clearResetUrl} onSuccess={()=>{ clearResetUrl(); setModal("login"); }}/>}
 
       {page==="home" && (
         <HomePage

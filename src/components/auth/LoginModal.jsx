@@ -5,7 +5,7 @@ import ModalShell from "./ModalShell";
 import IllustrationPanel from "./IllustrationPanel";
 import GoogleBtn from "./GoogleBtn";
 
-export default function LoginModal({ onClose, onSwitch, onSuccess }) {
+export default function LoginModal({ onClose, onSwitch, onSuccess, onForgotPassword }) {
   const [email,    setEmail]   = useState("");
   const [password, setPassword]= useState("");
   const [focused,  setFocused] = useState({});
@@ -68,7 +68,7 @@ export default function LoginModal({ onClose, onSwitch, onSuccess }) {
           <label style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:MUTED, cursor:"pointer" }}>
             <input type="checkbox" style={{ accentColor:BLUE }}/> Ingat saya
           </label>
-          <button style={{ background:"none", border:"none", color:BLUE, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Lupa password?</button>
+          <button onClick={onForgotPassword} style={{ background:"none", border:"none", color:BLUE, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Lupa password?</button>
         </div>
 
         <button onClick={handleLogin} disabled={!canSubmit}
