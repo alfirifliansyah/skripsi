@@ -81,6 +81,8 @@ export function normalizeJasa(j) {
     tag:       j.tag      || "Layanan",
     tagColor:  j.tagColor || j.tag_color || "#1B4FD8",
     imgBg:     j.imgBg    || j.img_bg    || "linear-gradient(135deg,#1a2a6c,#1B4FD8 60%,#23d5ab)",
+    gambar:      j.gambar     || null,
+    gambar_url:  j.gambar_url || null,
     features:  Array.isArray(j.features) ? j.features : [],
     packages:  Array.isArray(j.packages) ? j.packages : [],
     addons:    Array.isArray(j.addons)   ? j.addons   : [],

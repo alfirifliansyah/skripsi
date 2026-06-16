@@ -315,6 +315,7 @@ export default function BookingPage({
   const [company,  setCompany]  = useState(user?.company||"");
   const [notes,    setNotes]    = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(()=>{
     window.scrollTo(0,0);
@@ -414,14 +415,22 @@ export default function BookingPage({
           <div>
             <Anim>
               <div style={{ borderRadius:20,overflow:"hidden",marginBottom:"1.75rem",position:"relative",aspectRatio:"16/9",background:liveService.imgBg,display:"flex",alignItems:"center",justifyContent:"center" }}>
-                <div style={{ position:"absolute",inset:0,background:"rgba(0,0,0,.38)" }}/>
-                <div style={{ position:"relative",textAlign:"center" }}>
-                  <div style={{ fontSize:72 }}>{liveService.emoji}</div>
-                  <div style={{ color:WHITE,fontWeight:700,fontSize:20,marginTop:8 }}>{liveService.title}</div>
-                </div>
-                <div style={{ position:"absolute",top:16,left:16,background:"rgba(255,255,255,.2)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.3)",color:WHITE,fontSize:11,fontWeight:700,padding:".3rem .8rem",borderRadius:100 }}>{liveService.tag}</div>
-                <div style={{ position:"absolute",bottom:16,right:16,background:"rgba(255,255,255,.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.3)",color:WHITE,fontSize:12,fontWeight:600,padding:".4rem .9rem",borderRadius:100 }}>⭐ 4.9 · 200+ Event</div>
-              </div>
+  {liveService.gambar_url && !imgError && (
+    <img
+      src={liveService.gambar_url}
+      alt={liveService.title}
+      onError={() => setImgError(true)}
+      style={{ position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover" }}
+    />
+  )}
+  <div style={{ position:"absolute",inset:0,background:"rgba(0,0,0,.38)" }}/>
+  <div style={{ position:"relative",textAlign:"center" }}>
+    {(!liveService.gambar_url || imgError) && <div style={{ fontSize:72 }}>{liveService.emoji}</div>}
+    <div style={{ color:WHITE,fontWeight:700,fontSize:20,marginTop:8 }}>{liveService.title}</div>
+  </div>
+  <div style={{ position:"absolute",top:16,left:16,background:"rgba(255,255,255,.2)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.3)",color:WHITE,fontSize:11,fontWeight:700,padding:".3rem .8rem",borderRadius:100 }}>{liveService.tag}</div>
+  <div style={{ position:"absolute",bottom:16,right:16,background:"rgba(255,255,255,.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.3)",color:WHITE,fontSize:12,fontWeight:600,padding:".4rem .9rem",borderRadius:100 }}>⭐ 4.9 · 200+ Event</div>
+</div>
               <h1 className="hero-title" style={{ fontWeight:800,fontSize:"clamp(1.3rem,3vw,1.7rem)",color:DARK,marginBottom:".5rem" }}>{liveService.title?.toUpperCase()}</h1>
               <p style={{ fontSize:14,color:MUTED,lineHeight:1.8,marginBottom:"1.5rem" }}>{liveService.desc}</p>
               <div style={{ display:"flex",gap:8,flexWrap:"wrap",marginBottom:"2rem" }}>

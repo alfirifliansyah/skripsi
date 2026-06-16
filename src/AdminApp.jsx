@@ -598,12 +598,21 @@ function ServicesPage({ showToast }) {
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))", gap:"1rem" }}>
         {services.map(svc => (
           <Card key={svc.id_jasa || svc.id} style={{ padding:0, overflow:"hidden" }}>
-            <div style={{ height:120, background:svc.img_bg || svc.imgBg || BG_PRESETS[0], display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
-              {svc.emoji || svc.icon || "🎬"}
-              <div style={{ position:"absolute", top:10, right:10 }}>
+            <div style={{ height:120, background:svc.img_bg || svc.imgBg || BG_PRESETS[0], display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
+              {svc.gambar_url ? (
+                <img
+                  src={svc.gambar_url}
+                  alt={svc.nama_jasa || svc.title}
+                  style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}
+                  onError={(e) => { e.target.style.display = "none"; }}
+                />
+              ) : (
+                <span style={{ position:"relative", zIndex:1 }}>{svc.emoji || svc.icon || "🎬"}</span>
+              )}
+              <div style={{ position:"absolute", top:10, right:10, zIndex:2 }}>
                 <StatusBadge status={svc.status_tersedia}/>
               </div>
-              <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{svc.tag}</div>
+              <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100, zIndex:2 }}>{svc.tag}</div>
             </div>
             <div style={{ padding:"1.1rem 1.25rem" }}>
               <h3 style={{ fontWeight:800, fontSize:14, color:DARK, marginBottom:4 }}>{svc.nama_jasa || svc.title}</h3>
@@ -649,6 +658,8 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
     tag:              initial.tag || "Layanan",
     tag_color:        initial.tag_color || initial.tagColor || "#1B4FD8",
     img_bg:           initial.img_bg || initial.imgBg || BG_PRESETS[0],
+    gambar:           initial.gambar || null,            // ← BARU: path file dari server
+    gambar_url:       initial.gambar_url || null,        // ← BARU: URL siap pakai utk preview
     features:         Array.isArray(initial.features) ? [...initial.features] : [],
     packages:         Array.isArray(initial.packages) ? initial.packages.map(p => ({
                         id: p.id, label: p.label, hours: p.hours || "", price: Number(p.price || 0),
@@ -693,9 +704,11 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
       showToast({ type:"error", msg:"Nama, deskripsi, dan harga wajib diisi" });
       return;
     }
-    // Bersihkan features kosong
+    // Exclude gambar_url dari payload — backend tidak butuh field itu
+    // (cuma untuk preview UI). Backend hanya simpan `gambar` (path).
+    const { gambar_url, ...rest } = form;
     const payload = {
-      ...form,
+      ...rest,
       harga: Number(form.harga),
       features: form.features.filter(f => f && f.trim()),
       packages: form.packages.map(p => ({
@@ -779,7 +792,24 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
             </select>
           </Field>
         </div>
-        <Field label="BACKGROUND GRADIENT (PILIH PRESET / CUSTOM)" full>
+
+        {/* ── BARU: Upload Gambar Jasa ──────────────────────────────────── */}
+        <Field label="GAMBAR JASA (OPSIONAL — JIKA DIISI, AKAN MENGGANTI GRADIENT)" full>
+          <ImageUploader
+            value={form.gambar}
+            valueUrl={form.gambar_url}
+            folder="jasa"
+            onChange={(path, url) => setForm(f => ({ ...f, gambar: path, gambar_url: url }))}
+            onError={(msg) => showToast({ type:"error", msg })}
+            height={180}
+          />
+          <p style={{ fontSize:11, color:MUTED, marginTop:6 }}>
+            Rekomendasi rasio 16:9, resolusi minimal 1200x675px. Maksimal 5MB.
+          </p>
+        </Field>
+        {/* ──────────────────────────────────────────────────────────────── */}
+
+        <Field label="BACKGROUND GRADIENT (DIPAKAI JIKA TIDAK ADA GAMBAR)" full>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:6, marginBottom:8 }}>
             {BG_PRESETS.map((bg,i)=>(
               <div key={i} onClick={()=>set("img_bg", bg)} style={{ height:48, background:bg, borderRadius:8, cursor:"pointer", border:`3px solid ${form.img_bg===bg ? ACCENT : "transparent"}`, transition:"border-color .2s" }}/>
@@ -788,10 +818,14 @@ function ServiceForm({ initial, onCancel, onSaved, showToast }) {
           <input style={inputStyle()} value={form.img_bg} onChange={e=>set("img_bg", e.target.value)} placeholder="linear-gradient(135deg,#1B4FD8,#23d5ab)"/>
         </Field>
 
-        {/* Preview */}
-        <div style={{ marginTop:"1rem", height:120, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
-          {form.emoji}
-          <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{form.tag}</div>
+        {/* Preview — tampilkan gambar kalau ada, fallback ke emoji+gradient */}
+        <div style={{ marginTop:"1rem", height:120, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
+          {form.gambar_url ? (
+            <img src={form.gambar_url} alt="Preview" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+          ) : (
+            <span style={{ position:"relative", zIndex:1 }}>{form.emoji}</span>
+          )}
+          <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100, zIndex:2 }}>{form.tag}</div>
         </div>
       </Card>
 
