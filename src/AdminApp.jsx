@@ -1473,10 +1473,19 @@ function PortofolioAdminPage({ showToast }) {
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:"1rem" }}>
         {items.map(p => (
           <Card key={p.id_portofolio} style={{ padding:0, overflow:"hidden" }}>
-            <div style={{ height:120, background:p.img_bg || p.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
-              {p.icon}
-              {p.is_featured && <div style={{ position:"absolute", top:10, right:10, background:YELLOW, color:"#1C1200", fontSize:10, fontWeight:800, padding:".2rem .6rem", borderRadius:100 }}>⭐ BERANDA</div>}
-              <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{p.tag}</div>
+            <div style={{ height:120, background:p.img_bg || p.imgBg || "linear-gradient(135deg,#1B4FD8,#23d5ab)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
+              {p.gambar_url ? (
+                <img
+                  src={p.gambar_url}
+                  alt={p.judul}
+                  style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}
+                  onError={(e) => { e.target.style.display = "none"; }}
+                />
+              ) : (
+                <span style={{ position:"relative", zIndex:1 }}>{p.icon}</span>
+              )}
+              {p.is_featured && <div style={{ position:"absolute", top:10, right:10, background:YELLOW, color:"#1C1200", fontSize:10, fontWeight:800, padding:".2rem .6rem", borderRadius:100, zIndex:2 }}>⭐ BERANDA</div>}
+              <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100, zIndex:2 }}>{p.tag}</div>
             </div>
             <div style={{ padding:"1.1rem 1.25rem" }}>
               <h3 style={{ fontWeight:800, fontSize:14, color:DARK, marginBottom:4 }}>{p.judul}</h3>
@@ -1660,10 +1669,17 @@ function BerandaSettingsPage({ showToast }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const items = Object.keys(settings).map(kunci => ({
-        kunci, nilai: settings[kunci], grup: "beranda",
-        tipe: (settings[kunci] || "").length > 80 ? "longtext" : "text",
-      }));
+      // Filter: skip key yang berakhiran `_url` (kunci yang di-inject backend
+      // untuk URL siap pakai, mis. hero_image_url). Kunci-kunci ini cuma
+      // dipakai frontend untuk preview, BUKAN data yang disimpan ke DB.
+      const items = Object.keys(settings)
+        .filter(k => !k.endsWith("_url"))
+        .map(kunci => ({
+          kunci,
+          nilai: settings[kunci] ?? "",
+          grup:  "beranda",
+          tipe:  (settings[kunci] || "").length > 80 ? "longtext" : "text",
+        }));
       await adminAPI.updatePengaturan(items);
       showToast({ type:"success", msg:"Konten beranda diperbarui" });
     } catch (e) { showToast({ type:"error", msg: e.message }); }
@@ -1712,6 +1728,33 @@ function BerandaSettingsPage({ showToast }) {
           {saving ? "Menyimpan..." : "💾 Simpan Semua"}
         </button>
       </div>
+
+      {/* ── BARU: Gambar Hero (banner atas beranda) ──────────────────── */}
+      <Card style={{ marginBottom:"1rem" }}>
+        <SectionTitle>🖼️ Gambar Hero (Banner Atas Beranda)</SectionTitle>
+        <p style={{ fontSize:12, color:MUTED, marginBottom:"1rem", marginTop:"-.5rem" }}>
+          Gambar besar yang tampil di bagian paling atas halaman beranda. Kosongkan jika ingin pakai default (gradient).
+        </p>
+        <ImageUploader
+          value={settings.hero_image || null}
+          valueUrl={settings.hero_image_url || null}
+          folder="hero"
+          onChange={(path, url) => {
+            setSettings(s => ({
+              ...s,
+              hero_image:     path || "",
+              hero_image_url: url  || "",
+            }));
+          }}
+          onError={(msg) => showToast({ type:"error", msg })}
+          height={220}
+        />
+        <p style={{ fontSize:11, color:MUTED, marginTop:8 }}>
+          💡 Rekomendasi: gambar landscape rasio 16:9, resolusi minimal 1600x900px. Maksimal 5MB.
+          Setelah upload, klik "💾 Simpan Semua" agar gambar tersimpan ke beranda.
+        </p>
+      </Card>
+      {/* ───────────────────────────────────────────────────────────────── */}
 
       {sections.map(section => (
         <Card key={section.title} style={{ marginBottom:"1rem" }}>
