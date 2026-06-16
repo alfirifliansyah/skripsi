@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { authAPI, adminAPI, pemesananAPI, jasaAPI, jadwalAPI, portofolioAPI, pengaturanAPI, getToken } from "./services/api";
 import { STATUS_DISPLAY, ADMIN_STATUS_OPTIONS, getDisplayStatus, mapDisplayToBackend } from "./constants/status";
+import ImageUploader from "./components/admin/ImageUploader";
 
 /* ─── Design tokens ─── */
 const SIDEBAR_BG  = "#0D1117";
@@ -1511,6 +1512,8 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
     tanggal_proyek: initial.tanggal_proyek || "",
     icon: initial.icon || "🎬",
     img_bg: initial.img_bg || initial.imgBg || BG_PRESETS[0],
+    gambar: initial.gambar || null,            // ← BARU: path file dari server
+    gambar_url: initial.gambar_url || null,    // ← BARU: URL siap pakai utk preview
     tag: initial.tag || "PROJECT",
     tag_color: initial.tag_color || initial.tagColor || "#1B4FD8",
     is_featured: !!initial.is_featured,
@@ -1522,7 +1525,11 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
     if (!form.judul) { showToast({ type:"error", msg:"Judul wajib diisi" }); return; }
     setSaving(true);
     try {
-      const payload = { ...form, urutan: Number(form.urutan) };
+      // Exclude gambar_url dari payload — backend tidak butuh field itu
+      // (cuma dipakai di frontend untuk preview). Backend hanya simpan `gambar` (path).
+      const { gambar_url, ...rest } = form;
+      const payload = { ...rest, urutan: Number(form.urutan) };
+
       if (isEdit) await adminAPI.updatePortofolio(initial.id_portofolio, payload);
       else await adminAPI.createPortofolio(payload);
       showToast({ type:"success", msg: isEdit ? "Portofolio diupdate" : "Portofolio dibuat" });
@@ -1589,7 +1596,24 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
             </select>
           </Field>
         </div>
-        <Field label="BACKGROUND GRADIENT" full>
+
+        {/* ── BARU: Upload Gambar Portofolio ──────────────────────────────────── */}
+        <Field label="GAMBAR PORTOFOLIO (OPSIONAL — JIKA DIISI, AKAN MENGGANTI GRADIENT)" full>
+          <ImageUploader
+            value={form.gambar}
+            valueUrl={form.gambar_url}
+            folder="portofolio"
+            onChange={(path, url) => setForm({ ...form, gambar: path, gambar_url: url })}
+            onError={(msg) => showToast({ type:"error", msg })}
+            height={180}
+          />
+          <p style={{ fontSize:11, color:MUTED, marginTop:6 }}>
+            Rekomendasi rasio 16:9 atau 4:3. Maksimal 5MB.
+          </p>
+        </Field>
+        {/* ──────────────────────────────────────────────────────────────────────── */}
+
+        <Field label="BACKGROUND GRADIENT (DIPAKAI JIKA TIDAK ADA GAMBAR)" full>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:6, marginBottom:8 }}>
             {BG_PRESETS.map((bg,i)=>(
               <div key={i} onClick={()=>setForm({...form, img_bg: bg})} style={{ height:48, background:bg, borderRadius:8, cursor:"pointer", border:`3px solid ${form.img_bg===bg ? ACCENT : "transparent"}` }}/>
@@ -1602,11 +1626,15 @@ function PortofolioForm({ initial, onCancel, onSaved, showToast }) {
           <label htmlFor="featured" style={{ fontSize:13, color:DARK, cursor:"pointer", fontWeight:600 }}>⭐ Tampilkan di Beranda (preview portofolio homepage)</label>
         </div>
 
-        {/* Preview */}
-        <div style={{ marginTop:"1.25rem", height:140, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative" }}>
-          {form.icon}
-          <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100 }}>{form.tag}</div>
-          {form.is_featured && <div style={{ position:"absolute", top:10, right:10, background:YELLOW, color:"#1C1200", fontSize:10, fontWeight:800, padding:".2rem .6rem", borderRadius:100 }}>⭐ BERANDA</div>}
+        {/* Preview — tampilkan gambar kalau ada, fallback ke icon+gradient */}
+        <div style={{ marginTop:"1.25rem", height:140, background:form.img_bg, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, position:"relative", overflow:"hidden" }}>
+          {form.gambar_url ? (
+            <img src={form.gambar_url} alt="Preview" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+          ) : (
+            <span style={{ position:"relative", zIndex:1 }}>{form.icon}</span>
+          )}
+          <div style={{ position:"absolute", top:10, left:10, background:"rgba(255,255,255,.2)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,.3)", color:WHITE, fontSize:10, fontWeight:700, padding:".2rem .6rem", borderRadius:100, zIndex:2 }}>{form.tag}</div>
+          {form.is_featured && <div style={{ position:"absolute", top:10, right:10, background:YELLOW, color:"#1C1200", fontSize:10, fontWeight:800, padding:".2rem .6rem", borderRadius:100, zIndex:2 }}>⭐ BERANDA</div>}
         </div>
       </Card>
     </div>

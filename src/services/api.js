@@ -387,3 +387,73 @@ export const ping = async () => {
   try { const res = await GET("/ping"); return res.status === "ok"; }
   catch { return false; }
 };
+
+/* ══════════════════════════════════════════════════════════
+   UPLOAD GAMBAR (admin only)
+   ══════════════════════════════════════════════════════════
+   Endpoint:
+     POST   /api/admin/upload  (multipart/form-data)
+       body: { file: File, folder: 'jasa'|'portofolio'|'hero' }
+     DELETE /api/admin/upload  (json)
+       body: { path: 'uploads/...' }
+   ══════════════════════════════════════════════════════════ */
+export const uploadAPI = {
+  /**
+   * Upload satu file gambar ke backend Laravel.
+   * Backend simpan ke storage/app/public/uploads/{folder}/.
+   *
+   * @param {File}   file   - File object dari <input type="file">
+   * @param {string} folder - 'jasa' | 'portofolio' | 'hero'
+   * @returns {Promise<{path: string, url: string}>}
+   *
+   * TIDAK menggunakan helper POST() biasa karena untuk multipart,
+   * kita TIDAK boleh set Content-Type manual — browser harus
+   * mengaturnya sendiri beserta boundary multipart.
+   */
+  upload: async (file, folder) => {
+    if (!file)   throw new Error("File tidak boleh kosong");
+    if (!folder) throw new Error("Folder harus diisi (jasa/portofolio/hero)");
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", folder);
+
+    const token = getToken();
+    const h = { Accept: "application/json" };
+    if (token) h["Authorization"] = `Bearer ${token}`;
+    // PENTING: jangan set "Content-Type" — biarkan browser yang set
+    // dengan boundary multipart yang benar.
+
+    const res = await fetch(`${BASE_URL}/admin/upload`, {
+      method:  "POST",
+      headers: h,
+      body:    formData,
+    });
+
+    const json = await handle(res);
+    return json.data; // { path, url }
+  },
+
+  /**
+   * Hapus file gambar dari storage.
+   * Backend controller (UploadController::deleteFile) sudah auto-hapus
+   * file lama saat update entity, jadi function ini opsional —
+   * biasanya tidak perlu dipanggil manual.
+   */
+  delete: async (path) => {
+    if (!path) return;
+    const token = getToken();
+    const h = {
+      "Content-Type": "application/json",
+      Accept:         "application/json",
+    };
+    if (token) h["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${BASE_URL}/admin/upload`, {
+      method:  "DELETE",
+      headers: h,
+      body:    JSON.stringify({ path }),
+    });
+    return handle(res);
+  },
+};
