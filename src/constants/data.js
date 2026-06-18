@@ -1,5 +1,6 @@
 import { BLUE, BLUE_L, YELLOW_L } from "./colors";
 
+
 /* ══════════════════════════════════════════════════════════
    STATIC DATA — yang tidak butuh backend
 ══════════════════════════════════════════════════════════ */
@@ -54,12 +55,47 @@ export const MONTHS    = ["Januari","Februari","Maret","April","Mei","Juni","Jul
 export const DAYS_HDR  = ["MIN","SEN","SEL","RAB","KAM","JUM","SAB"];
 export const TIME_SLOTS= ["07:00","08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","19:00","20:00"];
 
-export const STATUS_CONFIG = {
-  selesai:  { label:"Selesai",              color:"#059669", bg:"#ECFDF5", icon:"✅" },
-  proses:   { label:"Sedang Diproses",      color:BLUE,      bg:BLUE_L,    icon:"⚙️" },
-  menunggu: { label:"Menunggu Konfirmasi",  color:"#D97706", bg:YELLOW_L,  icon:"⏳" },
-  batal:    { label:"Dibatalkan",           color:"#DC2626", bg:"#FEF2F2", icon:"❌" },
+/* ══════════════════════════════════════════════════════════
+   STATUS CONFIG — sistem 7 display_status (sub_status_pesanan)
+══════════════════════════════════════════════════════════ */
+export const STATUS_CFG = {
+  menunggu_pembayaran: { label: "Menunggu Pembayaran",      color: "#D97706", bg: YELLOW_L,   icon: "⏳" },
+  dikonfirmasi:        { label: "Pesanan Dikonfirmasi",     color: BLUE,      bg: BLUE_L,     icon: "✅" },
+  persiapan:           { label: "Tim Sedang Persiapan",     color: "#7C3AED", bg: "#EDE9FE",  icon: "🛠️" },
+  berlangsung:         { label: "Acara Sedang Berlangsung", color: "#C026D3", bg: "#FAE8FF",  icon: "🎬" },
+  acara_selesai:       { label: "Acara Selesai",            color: "#0E7490", bg: "#CFFAFE",  icon: "🏁" },
+  selesai:             { label: "Pesanan Selesai",          color: "#059669", bg: "#ECFDF5",  icon: "🎉" },
+  batal:               { label: "Dibatalkan",               color: "#DC2626", bg: "#FEF2F2",  icon: "❌" },
 };
+
+// Tombol yang muncul di modal "UBAH STATUS" (menunggu_pembayaran dikecualikan
+// karena itu otomatis dari webhook Midtrans, bukan dipilih manual oleh admin)
+export const ADMIN_STATUS_OPTIONS = ["dikonfirmasi", "persiapan", "berlangsung", "acara_selesai", "selesai", "batal"];
+
+// Ubah display key (yang dipilih admin) jadi payload backend
+export function mapDisplayToBackend(displayKey) {
+  const subStatuses = ["dikonfirmasi", "persiapan", "berlangsung", "acara_selesai"];
+  if (subStatuses.includes(displayKey)) {
+    return { status_pesanan: "proses", sub_status_pesanan: displayKey };
+  }
+  if (displayKey === "selesai") return { status_pesanan: "selesai", sub_status_pesanan: null };
+  if (displayKey === "batal")   return { status_pesanan: "batal",   sub_status_pesanan: null };
+  return { status_pesanan: "menunggu", sub_status_pesanan: null };
+}
+
+// Baca display status dari order. Backend sudah menghitungnya di
+// formatPemesanan() lewat computeDisplayStatus(), jadi tinggal pakai itu —
+// fallback manual hanya untuk jaga-jaga kalau field belum ada.
+export function getDisplayStatus(o) {
+  if (o.display_status) return o.display_status;
+  const status = o.status_pesanan ?? o.status;
+  const sub    = o.sub_status_pesanan ?? o.sub_status;
+  if (status === "batal")    return "batal";
+  if (status === "selesai")  return "selesai";
+  if (status === "menunggu") return o.pembayaran?.status_verifikasi === "success" ? "dikonfirmasi" : "menunggu_pembayaran";
+  if (status === "proses")   return sub || "dikonfirmasi";
+  return "menunggu_pembayaran";
+}
 
 export function fmt(n) { return "Rp " + Number(n || 0).toLocaleString("id-ID"); }
 

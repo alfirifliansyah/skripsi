@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { authAPI, adminAPI, pemesananAPI, jasaAPI, jadwalAPI, portofolioAPI, pengaturanAPI, getToken } from "./services/api";
-import { STATUS_DISPLAY, ADMIN_STATUS_OPTIONS, getDisplayStatus, mapDisplayToBackend } from "./constants/status";
+// import { STATUS_DISPLAY, } from "./constants/status";
 import ImageUploader from "./components/admin/ImageUploader";
+import { STATUS_CFG, ADMIN_STATUS_OPTIONS, mapDisplayToBackend, getDisplayStatus, fmt } from "./constants/data";
 
 /* ─── Design tokens ─── */
 const SIDEBAR_BG  = "#0D1117";
@@ -20,25 +21,6 @@ const BG          = "#F4F6FB";
 const WHITE       = "#FFFFFF";
 const BORDER      = "#E5EAF5";
 const YELLOW      = "#FACC15";
-
-/* ─── Helpers ─── */
-const fmt = (n) => "Rp " + Number(n || 0).toLocaleString("id-ID");
-
-const STATUS_CFG = {
-  // ── Status lama (backend mentah) — tetap ada utk kompatibilitas ──
-  selesai:        { label:"Selesai",         color:SUCCESS, bg:SUCCESS_L, icon:"✅" },
-  proses:         { label:"Diproses",        color:ACCENT,  bg:ACCENT_L,  icon:"⚙️" },
-  menunggu:       { label:"Menunggu",        color:WARNING, bg:WARNING_L, icon:"⏳" },
-  batal:          { label:"Dibatalkan",      color:DANGER,  bg:DANGER_L,  icon:"❌" },
-  tersedia:       { label:"Tersedia",        color:SUCCESS, bg:SUCCESS_L, icon:"🟢" },
-  tidak_tersedia: { label:"Tidak Tersedia",  color:MUTED,   bg:"#F1F5F9", icon:"⚫" },
-  // ── 7 status display baru (status_pesanan + sub_status) ──
-  menunggu_pembayaran: { label:"Menunggu Pembayaran",         color:"#D97706", bg:WARNING_L, icon:"💳" },
-  dikonfirmasi:        { label:"Pesanan Dikonfirmasi",        color:"#2563EB", bg:"#DBEAFE", icon:"✓" },
-  persiapan:           { label:"Tim Sedang Persiapan",        color:ACCENT,    bg:ACCENT_L,  icon:"🛠️" },
-  berlangsung:         { label:"Acara Sedang Berlangsung",    color:"#7C3AED", bg:"#EDE9FE", icon:"📡" },
-  acara_selesai:       { label:"Acara Selesai",               color:"#0891B2", bg:"#CFFAFE", icon:"🎬" },
-};
 
 const POLL_ADMIN_DASHBOARD = 15000; // 15 detik
 const POLL_ADMIN_ORDERS    = 12000; // 12 detik

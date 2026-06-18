@@ -32,11 +32,19 @@ try {
 
 /* ─── Headers ───────────────────────────────────────────── */
 function headers(auth = false) {
-  const h = { "Content-Type": "application/json", "Accept": "application/json" };
+  const h = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "ngrok-skip-browser-warning": "true",
+  };
+
   if (auth) {
     const t = getToken();
-    if (t) h["Authorization"] = `Bearer ${t}`;
+    if (t) {
+      h["Authorization"] = `Bearer ${t}`;
+    }
   }
+
   return h;
 }
 
@@ -277,10 +285,13 @@ export const adminAPI = {
     return res.data;
   },
 
-  updateStatusPesanan: async (idPemesanan, status) => {
-    const res = await PUT(`/admin/pemesanan/${idPemesanan}/status`, { status_pesanan: status }, true);
-    return res.data;
-  },
+  updateStatusPesanan: async (idPemesanan, statusPesanan, subStatusPesanan = null) => {
+  const res = await PUT(`/admin/pemesanan/${idPemesanan}/status`, {
+    status_pesanan: statusPesanan,
+    sub_status_pesanan: subStatusPesanan,
+  }, true);
+  return res.data;
+},
 
   /** CRUD Jasa */
   createJasa: async (data) => {
