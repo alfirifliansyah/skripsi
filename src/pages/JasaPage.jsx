@@ -130,7 +130,7 @@ export default function JasaPage({
           <Label>APA YANG KAMI TAWARKAN</Label>
           <h1 className="hero-title" style={{ fontSize: "clamp(1.8rem,4vw,3rem)", fontWeight: 800, color: DARK, letterSpacing: "-.02em", marginBottom: ".75rem" }}>Jasa <span style={{ color: BLUE }}>Kami.</span></h1>
           <p style={{ fontSize: 16, color: MUTED, lineHeight: 1.85, maxWidth: 560, marginBottom: "2.5rem" }}>
-            Kami menyediakan layanan multimedia profesional lengkap — dari live streaming, produksi video, hingga manajemen event skala besar untuk perusahaan di seluruh Indonesia.
+            Kami menyediakan layanan multimedia profesional lengkap — dari live streaming hingga zoom hybrid meeting skala besar untuk perusahaan di wilayah Balikpapan & sekitarnya.
           </p>
         </Anim>
 

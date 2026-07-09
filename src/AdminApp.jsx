@@ -199,9 +199,7 @@ function AdminLogin({ onSuccess }) {
           {loading ? "Memuat..." : "MASUK"}
         </button>
 
-        <p style={{ marginTop:"1.25rem", fontSize:12, color:MUTED, textAlign:"center" }}>
-          Default: <strong>admin@ima.test</strong> / <strong>admin123</strong>
-        </p>
+        
       </div>
     </div>
   );
@@ -1715,7 +1713,7 @@ function BerandaSettingsPage({ showToast }) {
       { key:"stat_klien",      label:"Statistik #1 — Klien",         isLong:false },
       { key:"stat_proyek",     label:"Statistik #2 — Proyek",        isLong:false },
       { key:"stat_pengalaman", label:"Statistik #3 — Pengalaman",    isLong:false },
-      { key:"stat_kota",       label:"Statistik #4 — Kota",          isLong:false },
+      { key:"stat_event",       label:"Statistik #4 — Event",          isLong:false },
     ]},
     { title:"Tentang Kami", fields:[
       { key:"about_title",  label:"Judul About",     isLong:false },

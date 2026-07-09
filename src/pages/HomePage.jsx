@@ -91,7 +91,7 @@ export default function HomePage({
               </div>
               <div>
                 <div style={{ fontWeight:700, fontSize:14, color:DARK }}>{t("stat_klien","200+")} Klien Puas</div>
-                <div style={{ fontSize:12, color:MUTED }}>di seluruh Indonesia</div>
+                <div style={{ fontSize:12, color:MUTED }}>di wilayah Balikpapan dan sekitarnya</div>
               </div>
             </div>
           </Anim>
@@ -103,7 +103,7 @@ export default function HomePage({
                   {val:t("stat_klien","200+"),     label:"Klien Aktif",       bg:BLUE_L,   text:BLUE      },
                   {val:t("stat_proyek","500+"),    label:"Proyek Selesai",    bg:YELLOW_L, text:"#92400E" },
                   {val:t("stat_pengalaman","10+"), label:"Tahun Pengalaman",  bg:BLUE_L,   text:BLUE      },
-                  {val:t("stat_kota","15+"),       label:"Kota di Indonesia", bg:YELLOW_L, text:"#92400E" },
+                  {val:t("stat_event","15+"),       label:"Event BUMN/Pemerintah", bg:YELLOW_L, text:"#92400E" },
                 ].map(item=>(
                   <div key={item.label} style={{ background:item.bg, borderRadius:12, padding:"1.25rem" }}>
                     <div style={{ fontSize:28, fontWeight:800, color:item.text }}>{item.val}</div>
@@ -114,13 +114,10 @@ export default function HomePage({
               <div style={{ background:BG, borderRadius:12, padding:"1rem 1.25rem", display:"flex", alignItems:"center", gap:".9rem", border:"1px solid #E5EAF5" }}>
                 <div style={{ width:40, height:40, background:BLUE_L, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>📡</div>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontWeight:600, fontSize:13, color:DARK }}>Live Streaming Active</div>
-                  <div style={{ fontSize:11, color:MUTED }}>3 event berjalan saat ini</div>
+                  <div style={{ fontWeight:600, fontSize:13, color:DARK }}>Tim teknis berpengalaman siap mendampingi acara Anda</div>
+                  
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                  <div style={{ width:8, height:8, background:"#22C55E", borderRadius:"50%" }}/>
-                  <span style={{ fontSize:11, color:"#16A34A", fontWeight:700 }}>LIVE</span>
-                </div>
+      
               </div>
             </div>
           </Anim>

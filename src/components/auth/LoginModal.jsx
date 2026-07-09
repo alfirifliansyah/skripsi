@@ -3,7 +3,7 @@ import { BLUE, BLUE_L, WHITE, DARK, MUTED, YELLOW } from "../../constants/colors
 import { authAPI } from "../../services/api";
 import ModalShell from "./ModalShell";
 import IllustrationPanel from "./IllustrationPanel";
-import GoogleBtn from "./GoogleBtn";
+
 
 export default function LoginModal({ onClose, onSwitch, onSuccess, onForgotPassword }) {
   const [email,    setEmail]   = useState("");
@@ -76,7 +76,7 @@ export default function LoginModal({ onClose, onSwitch, onSuccess, onForgotPassw
           onMouseOver={e=>{if(canSubmit)e.target.style.opacity=.88;}} onMouseOut={e=>e.target.style.opacity=1}>
           {loading ? "Memproses..." : "Masuk"}
         </button>
-        <GoogleBtn label="Masuk dengan Google"/>
+        
         <p style={{ textAlign:"center", fontSize:13, color:MUTED, marginTop:"1.5rem" }}>
           Belum punya akun?{" "}
           <button onClick={onSwitch} style={{ background:"none", border:"none", color:BLUE, fontWeight:700, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>Daftar gratis!</button>

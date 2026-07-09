@@ -3,7 +3,7 @@ import { BLUE, WHITE, DARK, MUTED, YELLOW } from "../../constants/colors";
 import { authAPI } from "../../services/api";
 import ModalShell from "./ModalShell";
 import IllustrationPanel from "./IllustrationPanel";
-import GoogleBtn from "./GoogleBtn";
+
 
 export default function RegisterModal({ onClose, onSwitch, onSuccess }) {
   const [firstName, setFirstName] = useState("");
@@ -104,9 +104,9 @@ export default function RegisterModal({ onClose, onSwitch, onSuccess }) {
           onMouseOver={e=>{if(canSubmit)e.target.style.opacity=.88;}} onMouseOut={e=>e.target.style.opacity=1}>
           {loading ? "Mendaftar..." : "Daftar Sekarang"}
         </button>
-        <GoogleBtn label="Daftar dengan Google"/>
+        
         <p style={{ textAlign:"center", fontSize:13, color:MUTED, marginTop:"1rem" }}>
-          Sudah punya akun kah?{" "}
+          Sudah punya akun?{" "}
           <button onClick={onSwitch} style={{ background:"none", border:"none", color:BLUE, fontWeight:700, cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>Masuk di sini</button>
         </p>
       </div>

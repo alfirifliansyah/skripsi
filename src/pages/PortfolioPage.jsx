@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BLUE, BLUE_L, BG, WHITE, DARK, MUTED } from "../constants/colors";
-import { ALL_PROJECTS, BUMN_CLIENTS } from "../constants/data";
+import { ALL_PROJECTS } from "../constants/data";
 import Navbar from "../components/layout/Navbar";
 import Anim from "../components/ui/Anim";
 import Label from "../components/ui/Label";
@@ -91,7 +91,7 @@ export default function PortfolioPage({
             Project <span style={{ color:BLUE }}>Kami.</span>
           </h1>
           <p style={{ fontSize:16, color:MUTED, lineHeight:1.85, maxWidth:540, marginBottom:"2.5rem" }}>
-            Kami telah menangani {items.length} proyek multimedia untuk perusahaan-perusahaan terkemuka di seluruh Indonesia.
+            Kami telah menangani {items.length} proyek multimedia untuk perusahaan-perusahaan di wilayah Balikpapan & sekitarnya.
           </p>
         </Anim>
 
@@ -136,39 +136,8 @@ export default function PortfolioPage({
           </div>
         )}
 
-        {/* Klien & BUMN */}
-        <Anim delay={0.1}>
-          <div style={{ marginTop:"6rem" }}>
-            <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
-              <Label>KLIEN KAMI</Label>
-              <h2 style={{ fontSize:"clamp(1.4rem,3vw,2.2rem)", fontWeight:700, color:DARK }}>Dipercaya Perusahaan <span style={{ color:BLUE }}>Terkemuka</span></h2>
-              <p style={{ color:MUTED, marginTop:".6rem", fontSize:15 }}>Kami bangga melayani korporasi besar di Indonesia, termasuk perusahaan BUMN dan multinasional.</p>
-            </div>
-            <div className="grid-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"1rem", marginBottom:"1.25rem" }}>
-              {BUMN_CLIENTS.map(client => (
-                <div key={client.name} style={{ background:WHITE, border:"1.5px solid #E5EAF5", borderRadius:14, padding:"1.25rem 1rem", display:"flex", alignItems:"center", gap:".9rem", transition:"border-color .25s,transform .25s,box-shadow .25s", cursor:"default" }}
-                  onMouseOver={e=>{ e.currentTarget.style.borderColor=client.color; e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 8px 24px rgba(0,0,0,.08)"; }}
-                  onMouseOut={e=>{ e.currentTarget.style.borderColor="#E5EAF5"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
-                  <div style={{ width:44, height:44, borderRadius:10, flexShrink:0, background:client.bg, border:`2px solid ${client.color}33`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <span style={{ fontWeight:900, fontSize:11, color:client.color, letterSpacing:"-.5px" }}>{client.abbr}</span>
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight:700, fontSize:14, color:DARK }}>{client.name}</div>
-                    <div style={{ fontSize:11, color:MUTED }}>{client.sub}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="card-pad" style={{ background:WHITE, border:"1.5px solid #E5EAF5", borderRadius:14, padding:"1.25rem 2rem", display:"flex", alignItems:"center", justifyContent:"center", gap:"3rem", flexWrap:"wrap" }}>
-              {[["🏅","Vendor Resmi BUMN"],["✅","Terverifikasi Kemenperin"],["🔒","ISO 9001:2015"],["⭐","4.9/5 Rating Klien"]].map(([ic,tx])=>(
-                <div key={tx} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <span style={{ fontSize:18 }}>{ic}</span>
-                  <span style={{ fontSize:13, fontWeight:600, color:DARK }}>{tx}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Anim>
+        
+        
       </div>
 
       <div className="footer-bottom section-pad" style={{ borderTop:"1px solid #E5EAF5", padding:"1.5rem 3rem", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
