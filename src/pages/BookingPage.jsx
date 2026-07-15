@@ -270,13 +270,7 @@ function PaymentStep({
           )}
         </div>
 
-        <div style={{ background:YELLOW_L,border:"1.5px solid #FDE68A",borderRadius:12,padding:"1rem 1.25rem",display:"flex",alignItems:"center",gap:10,marginBottom:"1.75rem" }}>
-          <span>🎁</span>
-          <div>
-            <p style={{ fontSize:13,fontWeight:700,color:"#92400E" }}>Promo Bayar Penuh</p>
-            <p style={{ fontSize:12,color:"#92400E",opacity:.8 }}>Diskon 5% untuk pembayaran lunas sebelum H-7 acara</p>
-          </div>
-        </div>
+        
 
         <button
           onClick={handleBayar}
@@ -570,9 +564,7 @@ export default function BookingPage({
                     <span style={{ fontSize:15,fontWeight:800,color:BLUE }}>{fmt(total)}</span>
                   </div>
                 </div>
-                <div style={{ background:YELLOW_L,border:"1px solid #FDE68A",borderRadius:10,padding:".75rem 1rem",display:"flex",alignItems:"center",gap:8,marginBottom:"1.25rem" }}>
-                  <span>🎁</span><span style={{ fontSize:12,color:"#92400E",fontWeight:600 }}>Bayar penuh sekarang, hemat 5%!</span>
-                </div>
+                
                 <button disabled={!canProceed} onClick={()=>{ if(canProceed) setStep(2); }}
                   style={{ width:"100%",padding:".9rem",borderRadius:12,border:"none",background:canProceed?BLUE:"#D1D9EF",color:canProceed?WHITE:MUTED,fontWeight:800,fontSize:15,cursor:canProceed?"pointer":"not-allowed",fontFamily:"inherit",letterSpacing:".04em",boxShadow:canProceed?"0 6px 20px rgba(27,79,216,.3)":"none",transition:"all .2s" }}>
                   {canProceed?"LANJUT KE PEMBAYARAN →":"Lengkapi Formulir Dulu"}

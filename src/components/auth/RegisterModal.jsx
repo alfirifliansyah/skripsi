@@ -13,12 +13,11 @@ export default function RegisterModal({ onClose, onSwitch, onSuccess }) {
   const [company,   setCompany]   = useState("");
   const [password,  setPassword]  = useState("");
   const [confirm,   setConfirm]   = useState("");
-  const [agreed,    setAgreed]    = useState(false);
   const [focused,   setFocused]   = useState({});
   const [loading,   setLoading]   = useState(false);
   const [err,       setErr]       = useState("");
 
-  const canSubmit = firstName && lastName && email && phone && company && password && confirm && agreed && password === confirm && !loading;
+  const canSubmit = firstName && lastName && email && phone && company && password && confirm && password === confirm && !loading;
 
   const fStyle = (key) => ({
     width:"100%", padding:".65rem .9rem",
@@ -93,11 +92,6 @@ export default function RegisterModal({ onClose, onSwitch, onSuccess }) {
         {password && confirm && password !== confirm && (
           <p style={{ fontSize:12, color:"#DC2626", marginBottom:".5rem", marginTop:"-.5rem" }}>⚠️ Password tidak cocok</p>
         )}
-
-        <div style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:"1rem" }}>
-          <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{ accentColor:BLUE, marginTop:3, flexShrink:0 }}/>
-          <span style={{ fontSize:12, color:MUTED, lineHeight:1.6 }}>Saya menyetujui <span style={{ color:BLUE, fontWeight:600 }}>Syarat & Ketentuan</span> serta <span style={{ color:BLUE, fontWeight:600 }}>Kebijakan Privasi</span>.</span>
-        </div>
 
         <button disabled={!canSubmit} onClick={handleRegister}
           style={{ width:"100%", padding:".8rem", background:canSubmit?YELLOW:"#D1D9EF", color:canSubmit?DARK:MUTED, border:"none", borderRadius:10, fontWeight:700, fontSize:15, cursor:canSubmit?"pointer":"not-allowed", fontFamily:"inherit", marginBottom:".75rem", boxShadow:canSubmit?"0 4px 16px rgba(250,204,21,.35)":"none", transition:"opacity .2s" }}

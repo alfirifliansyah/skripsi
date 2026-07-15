@@ -214,19 +214,7 @@ export default function JasaPage({
         ) : null}
 
         {/* CTA strip */}
-        <Anim delay={0.1}>
-          <div className="cta-strip" style={{ marginTop: "4rem", background: BLUE, borderRadius: 20, padding: "3rem 2.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "2rem", flexWrap: "wrap", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: -30, right: -30, width: 140, height: 140, borderRadius: "50%", background: YELLOW, opacity: .15 }} />
-            <div style={{ position: "relative" }}>
-              <h3 style={{ fontWeight: 700, fontSize: "clamp(1.1rem,2.5vw,1.4rem)", color: WHITE, marginBottom: ".5rem" }}>Tidak menemukan layanan yang Anda cari?</h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,.75)" }}>Hubungi kami dan kami akan menyesuaikan solusi khusus untuk kebutuhan Anda.</p>
-            </div>
-            <div className="btn-group" style={{ display: "flex", gap: ".75rem", flexShrink: 0, position: "relative" }}>
-              <button style={{ background: YELLOW, color: "#1C1200", border: "none", padding: ".8rem 1.75rem", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>Hubungi Kami</button>
-              <button onClick={onGoPortfolio} style={{ background: "rgba(255,255,255,.12)", color: WHITE, border: "1px solid rgba(255,255,255,.3)", padding: ".8rem 1.75rem", borderRadius: 10, fontWeight: 500, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>Lihat Portofolio</button>
-            </div>
-          </div>
-        </Anim>
+        
       </div>
 
       <div className="footer-bottom section-pad" style={{ borderTop: "1px solid #E5EAF5", padding: "1.5rem 3rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
